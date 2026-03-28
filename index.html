@@ -342,11 +342,7 @@
     }
     .drawer-runs { overflow-y: auto; flex: 1; padding: 0 20px 20px; }
 
-    .drun-row {
-      display: flex; align-items: center; gap: 12px;
-      padding: 10px 0; border-bottom: 1px solid var(--border);
-    }
-    .drun-row:last-child { border-bottom: none; }
+    /* drun-row styles consolidated below in run selection section */
     .drun-num { font-size: 10px; color: var(--muted); width: 20px; text-align: right; flex-shrink: 0; }
     .drun-time { font-family: 'Bebas Neue', sans-serif; font-size: 26px; color: var(--accent); letter-spacing: 1px; line-height: 1; }
     .drun-mph  { font-size: 11px; color: var(--green); font-weight: 600; letter-spacing: 1px; }
@@ -643,6 +639,12 @@ roster.forEach(a => {
   }
 });
 persist();
+
+// ══════════════════════════════════════
+//  DRAWER STATE (declared early so all functions can access)
+// ══════════════════════════════════════
+let _drawerAthleteId  = null;
+let _drawerSelectedId = null;
 
 // ══════════════════════════════════════
 //  TIMER
@@ -1243,9 +1245,6 @@ function renderDrawer(id) {
     });
   });
 }
-
-let _drawerAthleteId  = null;
-let _drawerSelectedId = null;
 
 function closeDrawer() {
   document.getElementById('drawer-overlay').classList.remove('on');
