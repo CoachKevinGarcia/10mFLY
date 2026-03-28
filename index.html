@@ -17,17 +17,17 @@
 
     :root {
       --bg:       #0a0a0a;
-      --surface:  #111111;
-      --surface2: #1a1a1a;
+      --surface:  #141414;
+      --surface2: #1e1e1e;
       --surface3: #222222;
-      --border:   #2a2a2a;
-      --accent:   #e8ff00;
-      --red:      #ff4400;
-      --text:     #f0f0f0;
-      --muted:    #aaa;
-      --green:    #00ff88;
-      --blue:     #00cfff;
-      --orange:   #ff9f00;
+      --border:   #383838;
+      --accent:   #f0ff00;
+      --red:      #ff3300;
+      --text:     #ffffff;
+      --muted:    #cccccc;
+      --green:    #00ffaa;
+      --blue:     #00ddff;
+      --orange:   #ffb300;
     }
 
     html, body {
@@ -356,6 +356,20 @@
     .drun-pr.t { background: var(--blue);   color: #000; }
     .drun-pr.m { background: var(--orange); color: #000; }
     .drawer-empty { text-align: center; padding: 30px 20px; color: var(--muted); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; }
+
+    /* ── roster key ── */
+    .r-key {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px 14px; margin-bottom: 10px;
+    }
+    .r-key-title { font-size: 9px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; }
+    .r-key-row   { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+    .r-key-row:last-child { margin-bottom: 0; }
+    .r-key-pill  { font-size: 10px; font-weight: 600; letter-spacing: 1px; padding: 2px 9px; border-radius: 10px; flex-shrink: 0; }
+    .r-key-pill.t { background: rgba(0,221,255,.15); color: var(--blue);   border: 1px solid rgba(0,221,255,.3); }
+    .r-key-pill.m { background: rgba(255,179,0,.15); color: var(--orange); border: 1px solid rgba(255,179,0,.3); }
+    .r-key-pill.f { background: rgba(0,255,170,.15); color: var(--green);  border: 1px solid rgba(0,255,170,.3); }
+    .r-key-meaning { font-size: 11px; color: var(--muted); letter-spacing: 0.5px; }
 
     /* inline name edit */
     .r-name-wrap { display: flex; align-items: center; gap: 8px; }
@@ -1033,7 +1047,13 @@ function removeAthlete(id) {
 // ══════════════════════════════════════
 function renderRoster() {
   const el = document.getElementById('r-list');
-  if (!roster.length) { el.innerHTML = '<div class="r-empty">No athletes yet — add above</div>'; return; }
+  const keyBox = `<div class="r-key">
+    <div class="r-key-title">Key</div>
+    <div class="r-key-row"><span class="r-key-pill t">⚡</span><span class="r-key-meaning">= Best Time (seconds)</span></div>
+    <div class="r-key-row"><span class="r-key-pill m">🔥</span><span class="r-key-meaning">= Top Speed (mph)</span></div>
+    <div class="r-key-row"><span class="r-key-pill f">🚀</span><span class="r-key-meaning">= First Run (seconds)</span></div>
+  </div>`;
+  if (!roster.length) { el.innerHTML = keyBox + '<div class="r-empty">No athletes yet — add above</div>'; return; }
   el.innerHTML = roster.map(a => {
     const runs  = a.runs || 0;
     const pills = [];
@@ -1053,6 +1073,7 @@ function renderRoster() {
       <button class="r-del" data-id="${a.id}">✕</button>
     </div>`;
   }).join('');
+  el.innerHTML = keyBox + el.innerHTML;
   el.querySelectorAll('.r-card').forEach(card => {
     card.addEventListener('click', e => {
       if (e.target.closest('.r-del'))      return;
