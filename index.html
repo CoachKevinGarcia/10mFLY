@@ -382,8 +382,8 @@
     .l-badges { display: flex; gap: 5px; margin-top: 4px; }
     .l-time   { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--accent); letter-spacing: 1px; line-height: 1; text-align: right; }
     .l-mph    { font-size: 12px; color: var(--green); font-weight: 600; text-align: right; letter-spacing: 1px; margin-top: 2px; }
-    .l-del    { background: none; border: none; color: var(--border); font-size: 16px; cursor: pointer; padding: 4px; transition: color .15s; }
-    .l-del:hover { color: var(--red); }
+    .l-del    { background: none; border: none; color: var(--red); font-size: 16px; cursor: pointer; padding: 4px; transition: opacity .15s; opacity: .6; }
+    .l-del:hover { opacity: 1; }
     .l-empty  { text-align: center; padding: 60px 20px; color: var(--muted); }
     .l-empty-ico { font-size: 48px; margin-bottom: 12px; opacity: .3; }
     .l-empty-txt { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; }
@@ -764,9 +764,8 @@ function renderQueue() {
     return;
   }
   strip.innerHTML = roster.map(a => {
-    const cls  = a.id === activeId ? 'qchip on' : 'qchip';
-    const sub  = a.firstTime ? ` <span class="qchip-sub">🚀${fmt(a.firstTime)}s</span>` : '';
-    return `<div class="${cls}" data-id="${a.id}">${esc(a.name)}${sub}</div>`;
+    const cls = a.id === activeId ? 'qchip on' : 'qchip';
+    return `<div class="${cls}" data-id="${a.id}">${esc(a.name)}</div>`;
   }).join('');
   strip.querySelectorAll('.qchip').forEach(c => {
     c.addEventListener('click', () => selectAthlete(parseInt(c.dataset.id)));
@@ -923,14 +922,10 @@ function renderLog() {
   el.innerHTML = history.map(e => {
     const both = e.isPrTime && e.isPrMph;
     const cls  = both ? 'l-card pb' : e.isPrTime ? 'l-card pt' : e.isPrMph ? 'l-card pm' : 'l-card';
-    const tags = [];
-    if (e.isPrTime) tags.push('<span class="pr-tag t">PR TIME ⚡</span>');
-    if (e.isPrMph)  tags.push('<span class="pr-tag m">PR MPH 🔥</span>');
     return `<div class="${cls}">
       <div>
         <div class="l-name">${esc(e.name)}</div>
         <div class="l-meta">${fmtDate(e.timestamp)}</div>
-        ${tags.length ? `<div class="l-badges">${tags.join('')}</div>` : ''}
       </div>
       <div>
         <div class="l-time">${fmt(e.timeMs)}s</div>
