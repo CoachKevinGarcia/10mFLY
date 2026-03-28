@@ -285,6 +285,7 @@
       display: grid; grid-template-columns: 1fr auto; gap: 3px 10px;
     }
     .r-name  { font-size: 15px; font-weight: 600; color: var(--text); }
+    .r-runcount { font-size: 12px; font-weight: 400; color: var(--muted); letter-spacing: 0; }
     .r-prs   { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 5px; }
     .r-pill  { font-size: 10px; letter-spacing: 1px; padding: 3px 9px; border-radius: 12px; font-weight: 600; }
     .r-pill.t { background: rgba(0,207,255,.15); color: var(--blue);   border: 1px solid rgba(0,207,255,.3); }
@@ -763,8 +764,9 @@ function renderQueue() {
     return;
   }
   strip.innerHTML = roster.map(a => {
-    const cls = a.id === activeId ? 'qchip on' : 'qchip';
-    return `<div class="${cls}" data-id="${a.id}">${esc(a.name)}</div>`;
+    const cls  = a.id === activeId ? 'qchip on' : 'qchip';
+    const sub  = a.firstTime ? ` <span class="qchip-sub">🚀${fmt(a.firstTime)}s</span>` : '';
+    return `<div class="${cls}" data-id="${a.id}">${esc(a.name)}${sub}</div>`;
   }).join('');
   strip.querySelectorAll('.qchip').forEach(c => {
     c.addEventListener('click', () => selectAthlete(parseInt(c.dataset.id)));
@@ -828,14 +830,14 @@ function renderRoster() {
   el.innerHTML = roster.map(a => {
     const runs  = a.runs || 0;
     const pills = [];
-    if (a.prTime) pills.push(`<span class="r-pill t">⚡ ${fmt(a.prTime)}s</span>`);
-    if (a.prMph)  pills.push(`<span class="r-pill m">🔥 ${a.prMph} mph</span>`);
-    if (a.firstTime) pills.push(`<span class="r-pill f">◎ ${fmt(a.firstTime)}s first</span>`);
-    pills.push(`<span class="r-pill c">${runs} run${runs !== 1 ? 's' : ''}</span>`);
-    if (!a.prTime && !a.prMph) pills.push('<span class="r-pill n">No runs yet</span>');
+    if (a.prTime)    pills.push(`<span class="r-pill t">⚡ ${fmt(a.prTime)}s</span>`);
+    if (a.prMph)     pills.push(`<span class="r-pill m">🔥 ${a.prMph} mph</span>`);
+    if (a.firstTime) pills.push(`<span class="r-pill f">🚀 ${fmt(a.firstTime)}s</span>`);
+    if (!a.prTime && !a.prMph && !a.firstTime) pills.push('<span class="r-pill n">No runs yet</span>');
+    const runLabel = runs > 0 ? `${runs} Run${runs !== 1 ? 's' : ''}` : '';
     return `<div class="r-card" data-id="${a.id}">
       <div>
-        <div class="r-name">${esc(a.name)}</div>
+        <div class="r-name">${esc(a.name)}${runLabel ? `<span class="r-runcount"> — ${runLabel}</span>` : ''}</div>
         <div class="r-prs">${pills.join('')}</div>
       </div>
       <button class="r-del" data-id="${a.id}">✕</button>
