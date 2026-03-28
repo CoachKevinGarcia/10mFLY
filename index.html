@@ -115,6 +115,52 @@
     .pr-tag.m  { background:var(--orange); color:#000; }
     .pr-tag.hide { visibility:hidden; }
 
+    /* benchmark tiers */
+    .tiers {
+      width:100%; opacity:0; transform:translateY(8px); transition:all .35s .1s;
+    }
+    .tiers.on { opacity:1; transform:translateY(0); }
+    .tier-lbl { font-size:9px; letter-spacing:2px; color:var(--muted); text-transform:uppercase; margin-bottom:6px; }
+    .tier-row {
+      display:flex; align-items:center; gap:10px;
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:10px; padding:10px 14px; margin-bottom:6px;
+      transition:all .2s;
+    }
+    .tier-row.active { border-width:2px; }
+    .tier-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+    .tier-info { flex:1; }
+    .tier-name { font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase; }
+    .tier-range { font-size:10px; color:var(--muted); margin-top:1px; letter-spacing:1px; }
+    .tier-you {
+      font-size:10px; font-weight:700; letter-spacing:1px;
+      padding:3px 8px; border-radius:6px; text-transform:uppercase; flex-shrink:0;
+    }
+
+    /* Elite sparkle shimmer */
+    @keyframes shimmer {
+      0%   { background-position: -200% center; }
+      100% { background-position:  200% center; }
+    }
+    .tier-row.elite-active {
+      background: linear-gradient(135deg, rgba(255,215,0,0.12), rgba(255,180,0,0.06), rgba(255,215,0,0.12)) !important;
+      border-color: #FFD700 !important;
+    }
+    .tier-name.sparkle {
+      background: linear-gradient(90deg, #b8860b, #FFD700, #fffacd, #FFD700, #b8860b);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: shimmer 2s linear infinite;
+    }
+    .tier-you.sparkle {
+      background: linear-gradient(90deg, #b8860b, #FFD700, #fffacd, #FFD700, #b8860b) !important;
+      background-size: 200% auto !important;
+      animation: shimmer 2s linear infinite;
+      color: #000 !important;
+    }
+
     /* queue */
     .q-wrap { padding:0 20px 10px; flex-shrink:0; }
     .q-lbl  { font-size:10px; letter-spacing:2px; color:var(--muted); text-transform:uppercase; margin-bottom:8px; }
@@ -282,6 +328,11 @@
           <div class="pr-tag m hide" id="pr-m">PR MPH 🔥</div>
         </div>
       </div>
+
+      <!-- benchmark tiers -->
+      <div class="tiers" id="tiers">
+        <div class="tier-lbl">Speed Tier</div>
+      </div>
     </div>
 
     <div class="q-wrap">
@@ -387,6 +438,7 @@ function doStart() {
   $rstBtn.disabled   = true;
   $saveBtn.disabled  = true;
   $result.classList.remove('on');
+  document.getElementById('tiers').classList.remove('on');
 }
 
 function doStop() {
@@ -405,6 +457,7 @@ function doStop() {
   $prT.className = 'pr-tag t' + (pr.time ? '' : ' hide');
   $prM.className = 'pr-tag m' + (pr.mph  ? '' : ' hide');
   $result.classList.add('on');
+  renderTier(ms);
 
   $slbl.textContent = 'STOPPED';
   $slbl.className   = 'state-lbl stop';
@@ -427,6 +480,45 @@ function doReset() {
   $rstBtn.disabled     = true;
   $saveBtn.disabled    = true;
   $result.classList.remove('on');
+}
+
+// ══════════════════════════════════════
+//  BENCHMARKS
+// ══════════════════════════════════════
+const TIERS = [
+  { name:'Elite',      range:'< 1.00s  ·  22+ mph',       min:0,    max:1.00, color:'#FFD700', bg:'rgba(255,215,0,0.10)',   sparkle:true  },
+  { name:'Target',     range:'1.00–1.25s  ·  18–22 mph',  min:1.00, max:1.26, color:'#00cfff', bg:'rgba(0,207,255,0.08)',   sparkle:false },
+  { name:'Emerging',   range:'1.26–1.35s  ·  16–18 mph',  min:1.26, max:1.36, color:'#00ff88', bg:'rgba(0,255,136,0.08)',   sparkle:false },
+  { name:'Developing', range:'1.36–1.54s  ·  14–16 mph',  min:1.36, max:1.55, color:'#e8ff00', bg:'rgba(232,255,0,0.08)',   sparkle:false },
+  { name:'Beginner',   range:'1.55s or slower',            min:1.55, max:9.99, color:'#666666', bg:'rgba(100,100,100,0.06)', sparkle:false },
+];
+
+function renderTier(timeMs) {
+  const secs = timeMs / 1000;
+  const el   = document.getElementById('tiers');
+  const tier = TIERS.find(t => secs >= t.min && secs < t.max) || TIERS[TIERS.length-1];
+
+  el.innerHTML = '<div class="tier-lbl">Speed Tier</div>' +
+    TIERS.map(t => {
+      const active  = t === tier;
+      const isElite = t.sparkle && active;
+      const rowCls  = 'tier-row' + (active ? (isElite ? ' active elite-active' : ' active') : '');
+      const style   = active && !isElite ? `border-color:${t.color}; background:${t.bg};` : '';
+      const nameCls = 'tier-name' + (isElite ? ' sparkle' : '');
+      const nameStyle = isElite ? '' : `color:${active ? t.color : 'var(--muted)'}`;
+      const youCls  = 'tier-you' + (isElite ? ' sparkle' : '');
+      const youStyle = isElite ? '' : `background:${t.color};color:#000`;
+      return `<div class="${rowCls}" style="${style}">
+        <div class="tier-dot" style="background:${t.color}"></div>
+        <div class="tier-info">
+          <div class="${nameCls}" style="${nameStyle}">${t.name}</div>
+          <div class="tier-range">${t.range}</div>
+        </div>
+        ${active ? `<div class="${youCls}" style="${youStyle}">◀ YOU</div>` : ''}
+      </div>`;
+    }).join('');
+
+  el.classList.add('on');
 }
 
 function doSave() {

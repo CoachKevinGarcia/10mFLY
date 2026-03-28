@@ -1,4 +1,4 @@
-const CACHE = 'fly10m-v3';
+const CACHE = 'fly10m-v5';
 
 // Only cache what we know exists — omit './' to avoid ambiguous root fetch
 const ASSETS = [
