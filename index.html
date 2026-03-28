@@ -357,6 +357,44 @@
     .drun-pr.m { background: var(--orange); color: #000; }
     .drawer-empty { text-align: center; padding: 30px 20px; color: var(--muted); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; }
 
+    /* inline name edit */
+    .r-name-wrap { display: flex; align-items: center; gap: 8px; }
+    .r-edit-btn  { background: none; border: none; color: var(--muted); font-size: 13px; cursor: pointer; padding: 0 2px; opacity: .6; transition: opacity .15s; flex-shrink: 0; }
+    .r-edit-btn:hover { opacity: 1; }
+    .r-name-input {
+      font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 600;
+      background: var(--surface2); border: 1px solid var(--accent);
+      border-radius: 8px; color: var(--text); padding: 4px 10px;
+      outline: none; width: 100%;
+    }
+    .r-name-actions { display: flex; gap: 6px; margin-top: 6px; }
+    .r-name-save { background: var(--accent); color: #000; border: none; border-radius: 8px; font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 1px; padding: 6px 14px; cursor: pointer; }
+    .r-name-cancel { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); border-radius: 8px; font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 1px; padding: 6px 14px; cursor: pointer; }
+
+    /* duplicate modal */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.8);
+      z-index: 200; display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity .25s;
+      padding: 20px;
+    }
+    .modal-overlay.on { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px 20px; width: 100%; max-width: 400px;
+      transform: translateY(12px); transition: transform .25s;
+    }
+    .modal-overlay.on .modal { transform: translateY(0); }
+    .modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 2px; color: var(--accent); margin-bottom: 8px; }
+    .modal-body  { font-size: 12px; color: var(--muted); line-height: 1.6; margin-bottom: 20px; }
+    .modal-body strong { color: var(--text); }
+    .modal-btns  { display: flex; flex-direction: column; gap: 8px; }
+    .modal-btn   { border: none; border-radius: 10px; font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 2px; padding: 16px; cursor: pointer; transition: opacity .15s; }
+    .modal-btn:active { opacity: .8; }
+    .modal-btn.merge    { background: var(--green);    color: #000; }
+    .modal-btn.overwrite{ background: var(--orange);   color: #000; }
+    .modal-btn.cancel   { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+
     /* make roster cards look tappable */
     .r-card { cursor: pointer; transition: background .15s; }
     .r-card:active { background: var(--surface2); }
@@ -518,6 +556,19 @@
   </div><!-- /screen-wrap -->
 </div>
 
+<!-- ── DUPLICATE MODAL ── -->
+<div class="modal-overlay" id="dup-overlay">
+  <div class="modal">
+    <div class="modal-title">Duplicate Athlete</div>
+    <div class="modal-body" id="dup-body">—</div>
+    <div class="modal-btns">
+      <button class="modal-btn merge"     id="dup-merge">Merge — combine runs &amp; keep best PRs</button>
+      <button class="modal-btn overwrite" id="dup-overwrite">Overwrite — replace existing athlete</button>
+      <button class="modal-btn cancel"    id="dup-cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── ATHLETE DRAWER ── -->
 <div class="drawer-overlay" id="drawer-overlay"></div>
 <div class="drawer" id="drawer">
@@ -653,26 +704,31 @@ function doReset() {
 
 // SAVE
 function doSave() {
-  const name  = activeId ? nameOf(activeId) : 'Athlete';
+  // Auto-create Unknown N if nobody is selected
+  if (!activeId) {
+    const unknown = createAthlete(nextUnknownName());
+    activeId = unknown.id;
+    renderQueue();
+  }
+
+  const name  = nameOf(activeId);
   const speed = parseFloat(mph(ms));
   const pr    = checkPR(activeId, ms, speed);
 
   const entry = {
-    id: Date.now(), athleteId: activeId||null, name,
+    id: Date.now(), athleteId: activeId, name,
     timeMs: ms, mph: speed.toFixed(2),
     isPrTime: pr.time, isPrMph: pr.mph,
     timestamp: new Date().toISOString()
   };
   history.unshift(entry);
 
-  if (activeId) {
-    const a = roster.find(r => r.id === activeId);
-    if (a) {
-      if (!a.prTime || ms < a.prTime)             a.prTime = ms;
-      if (!a.prMph  || speed > parseFloat(a.prMph)) a.prMph = speed.toFixed(2);
-      if (!a.firstTime) a.firstTime = ms;
-      a.runs = (a.runs || 0) + 1;
-    }
+  const a = roster.find(r => r.id === activeId);
+  if (a) {
+    if (!a.prTime || ms < a.prTime)               a.prTime = ms;
+    if (!a.prMph  || speed > parseFloat(a.prMph)) a.prMph  = speed.toFixed(2);
+    if (!a.firstTime) a.firstTime = ms;
+    a.runs = (a.runs || 0) + 1;
   }
   persist();
 
@@ -786,14 +842,166 @@ function advanceQueue() {
   renderQueue();
 }
 
+// ── next available "Unknown N" label ──
+function nextUnknownName() {
+  let n = 1;
+  while (roster.find(r => r.name === 'Unknown ' + n)) n++;
+  return 'Unknown ' + n;
+}
+
+// ── core create (no dupe check) ──
+function createAthlete(name) {
+  const a = { id: Date.now(), name, prTime: null, prMph: null, firstTime: null, runs: 0 };
+  roster.push(a);
+  persist(); renderQueue(); renderRoster();
+  return a;
+}
+
+// ── duplicate resolution state ──
+let _dupPending = null; // { newName, existingId }
+
+function showDupModal(newName, existingId) {
+  const ex = roster.find(r => r.id === existingId);
+  _dupPending = { newName, existingId };
+  document.getElementById('dup-body').innerHTML =
+    `<strong>${esc(newName)}</strong> already exists on the roster.<br><br>` +
+    `<strong>Merge</strong> — keeps all runs from both and the best PRs.<br>` +
+    `<strong>Overwrite</strong> — replaces ${esc(ex ? ex.name : newName)} with a fresh entry.`;
+  document.getElementById('dup-overlay').classList.add('on');
+}
+
+function hideDupModal() {
+  document.getElementById('dup-overlay').classList.remove('on');
+  _dupPending = null;
+}
+
+document.getElementById('dup-cancel').addEventListener('click', hideDupModal);
+
+document.getElementById('dup-merge').addEventListener('click', () => {
+  if (!_dupPending) return;
+  const { existingId } = _dupPending;
+  const ex = roster.find(r => r.id === existingId);
+  if (ex) {
+    // Re-derive PRs from history after merge (history already shares athleteId)
+    const runs = history.filter(e => e.athleteId === existingId);
+    if (runs.length) {
+      const bestTime = Math.min(...runs.map(e => e.timeMs));
+      const bestMph  = Math.max(...runs.map(e => parseFloat(e.mph)));
+      if (!ex.prTime || bestTime < ex.prTime) ex.prTime = bestTime;
+      if (!ex.prMph  || bestMph  > parseFloat(ex.prMph || 0)) ex.prMph = bestMph.toFixed(2);
+      if (!ex.firstTime) ex.firstTime = runs[runs.length - 1].timeMs;
+    }
+    persist(); renderQueue(); renderRoster();
+  }
+  hideDupModal();
+  toast('Merged ✓');
+});
+
+document.getElementById('dup-overwrite').addEventListener('click', () => {
+  if (!_dupPending) return;
+  const { newName, existingId } = _dupPending;
+  roster = roster.filter(r => r.id !== existingId);
+  // reassign history entries
+  history.forEach(e => { if (e.athleteId === existingId) e.athleteId = null; });
+  createAthlete(newName);
+  hideDupModal();
+  toast('Overwritten ✓');
+});
+
 function addAthlete(name) {
   name = name.trim();
   if (!name) return;
-  if (roster.find(r => r.name.toLowerCase() === name.toLowerCase())) { toast('Already on roster'); return; }
-  roster.push({ id: Date.now(), name, prTime: null, prMph: null, firstTime: null, runs: 0 });
-  persist();
-  renderQueue();
-  renderRoster();
+  const existing = roster.find(r => r.name.toLowerCase() === name.toLowerCase());
+  if (existing) { showDupModal(name, existing.id); return; }
+  createAthlete(name);
+}
+
+// ── inline rename ──
+function startEdit(id) {
+  const card = document.querySelector(`.r-card[data-id="${id}"]`);
+  if (!card) return;
+  const a = roster.find(r => r.id === id);
+  if (!a) return;
+  const nameWrap = card.querySelector('.r-name-wrap');
+  nameWrap.innerHTML =
+    `<input class="r-name-input" id="edit-input-${id}" value="${esc(a.name)}" />` +
+    `<div class="r-name-actions">` +
+      `<button class="r-name-save"   data-id="${id}">SAVE</button>` +
+      `<button class="r-name-cancel" data-id="${id}">CANCEL</button>` +
+    `</div>`;
+  const inp = card.querySelector('.r-name-input');
+  inp.focus(); inp.select();
+
+  card.querySelector('.r-name-save').addEventListener('click', () => commitEdit(id, inp.value));
+  card.querySelector('.r-name-cancel').addEventListener('click', () => renderRoster());
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter')  commitEdit(id, inp.value);
+    if (e.key === 'Escape') renderRoster();
+  });
+}
+
+function commitEdit(id, rawName) {
+  const name = rawName.trim();
+  if (!name) { renderRoster(); return; }
+  const a = roster.find(r => r.id === id);
+  if (!a) return;
+  if (name === a.name) { renderRoster(); return; }
+
+  // Check for duplicate (excluding self)
+  const dup = roster.find(r => r.id !== id && r.name.toLowerCase() === name.toLowerCase());
+  if (dup) {
+    // Offer merge: move this athlete's runs to dup, delete this one
+    _dupPending = { newName: name, existingId: dup.id, sourceId: id };
+    document.getElementById('dup-body').innerHTML =
+      `<strong>${esc(name)}</strong> already exists.<br><br>` +
+      `<strong>Merge</strong> — move all of <strong>${esc(a.name)}</strong>'s runs into <strong>${esc(dup.name)}</strong> and remove this entry.<br>` +
+      `<strong>Overwrite</strong> — rename this entry and delete ${esc(dup.name)}.`;
+
+    // Override merge/overwrite for rename context
+    const mergeBtn = document.getElementById('dup-merge');
+    const overBtn  = document.getElementById('dup-overwrite');
+
+    const mergeHandler = () => {
+      // Move runs from sourceId → existingId
+      history.forEach(e => { if (e.athleteId === id) { e.athleteId = dup.id; e.name = dup.name; } });
+      // Recalc dup PRs
+      const runs = history.filter(e => e.athleteId === dup.id);
+      if (runs.length) {
+        dup.prTime = Math.min(...runs.map(e => e.timeMs));
+        dup.prMph  = Math.max(...runs.map(e => parseFloat(e.mph))).toFixed(2);
+        if (!dup.firstTime) dup.firstTime = runs[runs.length - 1].timeMs;
+        dup.runs   = runs.length;
+      }
+      roster = roster.filter(r => r.id !== id);
+      if (activeId === id) activeId = dup.id;
+      persist(); renderQueue(); renderRoster();
+      hideDupModal(); toast('Merged ✓');
+      mergeBtn.removeEventListener('click', mergeHandler);
+      overBtn.removeEventListener('click',  overHandler);
+    };
+    const overHandler = () => {
+      // Rename this, delete dup
+      a.name = name;
+      history.forEach(e => { if (e.athleteId === dup.id) e.athleteId = null; });
+      roster = roster.filter(r => r.id !== dup.id);
+      if (activeId === dup.id) activeId = id;
+      persist(); renderQueue(); renderRoster();
+      hideDupModal(); toast('Renamed ✓');
+      mergeBtn.removeEventListener('click', mergeHandler);
+      overBtn.removeEventListener('click',  overHandler);
+    };
+
+    mergeBtn.addEventListener('click', mergeHandler);
+    overBtn.addEventListener('click',  overHandler);
+    document.getElementById('dup-overlay').classList.add('on');
+    return;
+  }
+
+  // Simple rename — update roster + history entries
+  a.name = name;
+  history.forEach(e => { if (e.athleteId === id) e.name = name; });
+  persist(); renderQueue(); renderRoster();
+  toast('Renamed ✓');
 }
 
 document.getElementById('q-plus').addEventListener('click', () => {
@@ -835,8 +1043,11 @@ function renderRoster() {
     if (!a.prTime && !a.prMph && !a.firstTime) pills.push('<span class="r-pill n">No runs yet</span>');
     const runLabel = runs > 0 ? `${runs} Run${runs !== 1 ? 's' : ''}` : '';
     return `<div class="r-card" data-id="${a.id}">
-      <div>
-        <div class="r-name">${esc(a.name)}${runLabel ? `<span class="r-runcount"> — ${runLabel}</span>` : ''}</div>
+      <div style="flex:1;min-width:0">
+        <div class="r-name-wrap">
+          <div class="r-name">${esc(a.name)}${runLabel ? `<span class="r-runcount"> — ${runLabel}</span>` : ''}</div>
+          <button class="r-edit-btn" data-id="${a.id}" title="Rename">✎</button>
+        </div>
         <div class="r-prs">${pills.join('')}</div>
       </div>
       <button class="r-del" data-id="${a.id}">✕</button>
@@ -844,9 +1055,14 @@ function renderRoster() {
   }).join('');
   el.querySelectorAll('.r-card').forEach(card => {
     card.addEventListener('click', e => {
-      if (e.target.closest('.r-del')) return; // don't open drawer when deleting
+      if (e.target.closest('.r-del'))      return;
+      if (e.target.closest('.r-edit-btn')) return;
+      if (e.target.closest('.r-name-input')) return;
       openDrawer(parseInt(card.dataset.id));
     });
+  });
+  el.querySelectorAll('.r-edit-btn').forEach(b => {
+    b.addEventListener('click', e => { e.stopPropagation(); startEdit(parseInt(b.dataset.id)); });
   });
   el.querySelectorAll('.r-del').forEach(b => {
     b.addEventListener('click', () => removeAthlete(parseInt(b.dataset.id)));
