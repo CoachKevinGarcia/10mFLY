@@ -295,6 +295,69 @@
     .r-del:hover { color: var(--red); }
     .r-empty { text-align: center; padding: 50px 20px; color: var(--muted); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; }
 
+    /* ── ATHLETE DRAWER ── */
+    .drawer-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.7);
+      z-index: 100; opacity: 0; pointer-events: none;
+      transition: opacity .3s;
+    }
+    .drawer-overlay.on { opacity: 1; pointer-events: all; }
+
+    .drawer {
+      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%) translateY(100%);
+      width: 100%; max-width: 480px;
+      background: var(--surface); border-radius: 20px 20px 0 0;
+      border-top: 1px solid var(--border);
+      z-index: 101; transition: transform .35s cubic-bezier(.4,0,.2,1);
+      display: flex; flex-direction: column;
+      max-height: 80dvh;
+    }
+    .drawer.on { transform: translateX(-50%) translateY(0); }
+
+    .drawer-handle {
+      width: 40px; height: 4px; background: var(--border);
+      border-radius: 2px; margin: 12px auto 0;
+      flex-shrink: 0;
+    }
+    .drawer-header {
+      padding: 14px 20px 10px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .drawer-name { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 2px; color: var(--text); }
+    .drawer-close {
+      background: none; border: none; color: var(--muted); font-size: 22px;
+      cursor: pointer; padding: 4px; line-height: 1;
+    }
+    .drawer-prs {
+      display: flex; gap: 8px; padding: 10px 20px;
+      border-bottom: 1px solid var(--border); flex-shrink: 0; flex-wrap: wrap;
+    }
+    .drawer-section-lbl {
+      font-size: 9px; letter-spacing: 2px; color: var(--muted);
+      text-transform: uppercase; padding: 10px 20px 6px; flex-shrink: 0;
+    }
+    .drawer-runs { overflow-y: auto; flex: 1; padding: 0 20px 20px; }
+
+    .drun-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 0; border-bottom: 1px solid var(--border);
+    }
+    .drun-row:last-child { border-bottom: none; }
+    .drun-num { font-size: 10px; color: var(--muted); width: 20px; text-align: right; flex-shrink: 0; }
+    .drun-time { font-family: 'Bebas Neue', sans-serif; font-size: 26px; color: var(--accent); letter-spacing: 1px; line-height: 1; }
+    .drun-mph  { font-size: 11px; color: var(--green); font-weight: 600; letter-spacing: 1px; }
+    .drun-date { font-size: 9px; color: var(--muted); letter-spacing: 1px; margin-top: 1px; }
+    .drun-tags { display: flex; gap: 4px; margin-top: 3px; }
+    .drun-pr   { font-size: 8px; font-weight: 700; letter-spacing: 1px; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
+    .drun-pr.t { background: var(--blue);   color: #000; }
+    .drun-pr.m { background: var(--orange); color: #000; }
+    .drawer-empty { text-align: center; padding: 30px 20px; color: var(--muted); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; }
+
+    /* make roster cards look tappable */
+    .r-card { cursor: pointer; transition: background .15s; }
+    .r-card:active { background: var(--surface2); }
+
     /* ── LOG ── */
     .l-head  { padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); flex-shrink: 0; }
     .l-title { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 3px; color: var(--muted); }
@@ -451,6 +514,20 @@
 
   </div><!-- /screen-wrap -->
 </div>
+
+<!-- ── ATHLETE DRAWER ── -->
+<div class="drawer-overlay" id="drawer-overlay"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-handle"></div>
+  <div class="drawer-header">
+    <div class="drawer-name" id="drawer-name">—</div>
+    <button class="drawer-close" id="drawer-close">✕</button>
+  </div>
+  <div class="drawer-prs" id="drawer-prs"></div>
+  <div class="drawer-section-lbl">Last 10 Runs</div>
+  <div class="drawer-runs" id="drawer-runs"></div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -470,6 +547,16 @@ function persist() {
   try { localStorage.setItem('fly_history', JSON.stringify(history)); } catch(e){}
 }
 load();
+
+// Backfill firstTime for athletes who were saved before this field existed
+roster.forEach(a => {
+  if (!a.firstTime) {
+    // history is newest-first, so oldest run is last in the filtered array
+    const runs = history.filter(e => e.athleteId === a.id);
+    if (runs.length) a.firstTime = runs[runs.length - 1].timeMs;
+  }
+});
+persist();
 
 // ══════════════════════════════════════
 //  TIMER
@@ -580,6 +667,7 @@ function doSave() {
     if (a) {
       if (!a.prTime || ms < a.prTime)             a.prTime = ms;
       if (!a.prMph  || speed > parseFloat(a.prMph)) a.prMph = speed.toFixed(2);
+      if (!a.firstTime) a.firstTime = ms;
       a.runs = (a.runs || 0) + 1;
     }
   }
@@ -699,7 +787,7 @@ function addAthlete(name) {
   name = name.trim();
   if (!name) return;
   if (roster.find(r => r.name.toLowerCase() === name.toLowerCase())) { toast('Already on roster'); return; }
-  roster.push({ id: Date.now(), name, prTime: null, prMph: null, runs: 0 });
+  roster.push({ id: Date.now(), name, prTime: null, prMph: null, firstTime: null, runs: 0 });
   persist();
   renderQueue();
   renderRoster();
@@ -741,19 +829,85 @@ function renderRoster() {
     if (a.prTime) pills.push(`<span class="r-pill t">⚡ ${fmt(a.prTime)}s</span>`);
     if (a.prMph)  pills.push(`<span class="r-pill m">🔥 ${a.prMph} mph</span>`);
     if (!a.prTime && !a.prMph) pills.push('<span class="r-pill n">No runs yet</span>');
-    return `<div class="r-card">
+    const firstLine = a.firstTime
+      ? `<div class="r-first">FIRST: ${fmt(a.firstTime)}s</div>`
+      : '';
+    return `<div class="r-card" data-id="${a.id}">
       <div>
         <div class="r-name">${esc(a.name)}</div>
         <div class="r-prs">${pills.join('')}</div>
-        <div class="r-runs">${runs} run${runs !== 1 ? 's' : ''}</div>
+        <div class="r-runs">${runs} run${runs !== 1 ? 's' : ''}${a.firstTime ? ' · ' + fmt(a.firstTime) + 's first' : ''}</div>
       </div>
       <button class="r-del" data-id="${a.id}">✕</button>
     </div>`;
   }).join('');
+  el.querySelectorAll('.r-card').forEach(card => {
+    card.addEventListener('click', e => {
+      if (e.target.closest('.r-del')) return; // don't open drawer when deleting
+      openDrawer(parseInt(card.dataset.id));
+    });
+  });
   el.querySelectorAll('.r-del').forEach(b => {
     b.addEventListener('click', () => removeAthlete(parseInt(b.dataset.id)));
   });
 }
+
+// ══════════════════════════════════════
+//  ATHLETE DRAWER
+// ══════════════════════════════════════
+function openDrawer(id) {
+  const a = roster.find(r => r.id === id);
+  if (!a) return;
+
+  // Header name
+  document.getElementById('drawer-name').textContent = a.name;
+
+  // PR pills
+  const prsEl = document.getElementById('drawer-prs');
+  const pills = [];
+  if (a.prTime) pills.push(`<span class="r-pill t">⚡ PR ${fmt(a.prTime)}s</span>`);
+  if (a.prMph)  pills.push(`<span class="r-pill m">🔥 PR ${a.prMph} mph</span>`);
+  if (!a.prTime && !a.prMph) pills.push('<span class="r-pill n">No runs yet</span>');
+  prsEl.innerHTML = pills.join('');
+
+  // Last 10 runs for this athlete
+  const runs = history
+    .filter(e => e.athleteId === id)
+    .slice(0, 10);
+
+  const runsEl = document.getElementById('drawer-runs');
+  if (!runs.length) {
+    runsEl.innerHTML = '<div class="drawer-empty">No runs logged yet</div>';
+  } else {
+    runsEl.innerHTML = runs.map((e, i) => {
+      const tags = [];
+      if (e.isPrTime) tags.push('<span class="drun-pr t">PR TIME</span>');
+      if (e.isPrMph)  tags.push('<span class="drun-pr m">PR MPH</span>');
+      return `<div class="drun-row">
+        <div class="drun-num">${i + 1}</div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:baseline;gap:10px">
+            <div class="drun-time">${fmt(e.timeMs)}s</div>
+            <div class="drun-mph">${e.mph} mph</div>
+          </div>
+          <div class="drun-date">${fmtDate(e.timestamp)}</div>
+          ${tags.length ? `<div class="drun-tags">${tags.join('')}</div>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  document.getElementById('drawer-overlay').classList.add('on');
+  document.getElementById('drawer').classList.add('on');
+}
+
+function closeDrawer() {
+  document.getElementById('drawer-overlay').classList.remove('on');
+  document.getElementById('drawer').classList.remove('on');
+}
+
+document.getElementById('drawer-close').addEventListener('click', closeDrawer);
+document.getElementById('drawer-overlay').addEventListener('click', closeDrawer);
 
 // ══════════════════════════════════════
 //  LOG RENDER
