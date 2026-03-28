@@ -357,6 +357,24 @@
     .drun-pr.m { background: var(--orange); color: #000; }
     .drawer-empty { text-align: center; padding: 30px 20px; color: var(--muted); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; }
 
+    /* run row selection */
+    .drun-row { cursor: pointer; border-radius: 8px; padding: 10px 6px; margin: 0 -6px; transition: background .15s; }
+    .drun-row:hover { background: var(--surface2); }
+    .drun-row.selected { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; }
+    .drun-actions {
+      display: flex; gap: 8px; margin-top: 8px;
+      padding-top: 8px; border-top: 1px solid var(--border);
+    }
+    .drun-act {
+      flex: 1; border: none; border-radius: 8px; font-family: 'Bebas Neue', sans-serif;
+      font-size: 15px; letter-spacing: 1px; padding: 10px 6px; cursor: pointer;
+      transition: opacity .15s; text-align: center;
+    }
+    .drun-act:active { opacity: .75; }
+    .drun-act.set-pr-time { background: rgba(0,221,255,.2);  color: var(--blue);   border: 1px solid rgba(0,221,255,.4); }
+    .drun-act.set-pr-mph  { background: rgba(255,179,0,.2);  color: var(--orange); border: 1px solid rgba(255,179,0,.4); }
+    .drun-act.del-run     { background: rgba(255,51,0,.15);  color: var(--red);    border: 1px solid rgba(255,51,0,.35); }
+
     /* ── roster key ── */
     .r-key {
       background: var(--surface); border: 1px solid var(--border);
@@ -1094,6 +1112,14 @@ function renderRoster() {
 //  ATHLETE DRAWER
 // ══════════════════════════════════════
 function openDrawer(id) {
+  _drawerAthleteId  = id;
+  _drawerSelectedId = null;
+  renderDrawer(id);
+  document.getElementById('drawer-overlay').classList.add('on');
+  document.getElementById('drawer').classList.add('on');
+}
+
+function renderDrawer(id) {
   const a = roster.find(r => r.id === id);
   if (!a) return;
 
@@ -1103,26 +1129,36 @@ function openDrawer(id) {
   // PR pills
   const prsEl = document.getElementById('drawer-prs');
   const pills = [];
-  if (a.prTime) pills.push(`<span class="r-pill t">⚡ PR ${fmt(a.prTime)}s</span>`);
-  if (a.prMph)  pills.push(`<span class="r-pill m">🔥 PR ${a.prMph} mph</span>`);
+  if (a.prTime) pills.push(`<span class="r-pill t">⚡ ${fmt(a.prTime)}s</span>`);
+  if (a.prMph)  pills.push(`<span class="r-pill m">🔥 ${a.prMph} mph</span>`);
   if (!a.prTime && !a.prMph) pills.push('<span class="r-pill n">No runs yet</span>');
   prsEl.innerHTML = pills.join('');
 
-  // Last 10 runs for this athlete
-  const runs = history
-    .filter(e => e.athleteId === id)
-    .slice(0, 10);
-
+  // Last 10 runs
+  const runs = history.filter(e => e.athleteId === id).slice(0, 10);
   const runsEl = document.getElementById('drawer-runs');
+
   if (!runs.length) {
     runsEl.innerHTML = '<div class="drawer-empty">No runs logged yet</div>';
-  } else {
-    runsEl.innerHTML = runs.map((e, i) => {
-      const tags = [];
-      if (e.isPrTime) tags.push('<span class="drun-pr t">PR TIME</span>');
-      if (e.isPrMph)  tags.push('<span class="drun-pr m">PR MPH</span>');
-      return `<div class="drun-row">
-        <div class="drun-num">${i + 1}</div>
+    return;
+  }
+
+  runsEl.innerHTML = runs.map((e, i) => {
+    const isSelected = e.id === _drawerSelectedId;
+    const tags = [];
+    if (e.isPrTime) tags.push('<span class="drun-pr t">⚡ PR TIME</span>');
+    if (e.isPrMph)  tags.push('<span class="drun-pr m">🔥 PR MPH</span>');
+
+    const actions = isSelected ? `
+      <div class="drun-actions">
+        <button class="drun-act set-pr-time" data-run="${e.id}">⚡ SET PR TIME</button>
+        <button class="drun-act set-pr-mph"  data-run="${e.id}">🔥 SET PR MPH</button>
+        <button class="drun-act del-run"     data-run="${e.id}">🗑 DELETE</button>
+      </div>` : '';
+
+    return `<div class="drun-row${isSelected ? ' selected' : ''}" data-run="${e.id}" data-idx="${i}">
+      <div style="display:flex;align-items:flex-start;gap:10px">
+        <div class="drun-num" style="padding-top:4px">${i + 1}</div>
         <div style="flex:1">
           <div style="display:flex;align-items:baseline;gap:10px">
             <div class="drun-time">${fmt(e.timeMs)}s</div>
@@ -1130,18 +1166,92 @@ function openDrawer(id) {
           </div>
           <div class="drun-date">${fmtDate(e.timestamp)}</div>
           ${tags.length ? `<div class="drun-tags">${tags.join('')}</div>` : ''}
+          ${actions}
         </div>
-      </div>`;
-    }).join('');
-  }
+      </div>
+    </div>`;
+  }).join('');
 
-  document.getElementById('drawer-overlay').classList.add('on');
-  document.getElementById('drawer').classList.add('on');
+  // Wire row taps
+  runsEl.querySelectorAll('.drun-row').forEach(row => {
+    row.addEventListener('click', e => {
+      if (e.target.closest('.drun-act')) return; // handled below
+      const runId = parseInt(row.dataset.run);
+      _drawerSelectedId = (_drawerSelectedId === runId) ? null : runId;
+      renderDrawer(_drawerAthleteId);
+    });
+  });
+
+  // Wire action buttons
+  runsEl.querySelectorAll('.drun-act.set-pr-time').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const run = history.find(x => x.id === parseInt(btn.dataset.run));
+      if (!run) return;
+      const athlete = roster.find(r => r.id === id);
+      if (!athlete) return;
+      athlete.prTime = run.timeMs;
+      // re-flag isPrTime on history
+      const athleteRuns = history.filter(x => x.athleteId === id);
+      const best = Math.min(...athleteRuns.map(x => x.timeMs));
+      athleteRuns.forEach(x => { x.isPrTime = x.timeMs === best; });
+      persist(); renderRoster(); renderDrawer(id);
+      toast('⚡ PR Time updated');
+    });
+  });
+
+  runsEl.querySelectorAll('.drun-act.set-pr-mph').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const run = history.find(x => x.id === parseInt(btn.dataset.run));
+      if (!run) return;
+      const athlete = roster.find(r => r.id === id);
+      if (!athlete) return;
+      athlete.prMph = run.mph;
+      // re-flag isPrMph on history
+      const athleteRuns = history.filter(x => x.athleteId === id);
+      const best = Math.max(...athleteRuns.map(x => parseFloat(x.mph)));
+      athleteRuns.forEach(x => { x.isPrMph = parseFloat(x.mph) === best; });
+      persist(); renderRoster(); renderDrawer(id);
+      toast('🔥 PR Speed updated');
+    });
+  });
+
+  runsEl.querySelectorAll('.drun-act.del-run').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const runId  = parseInt(btn.dataset.run);
+      const run    = history.find(x => x.id === runId);
+      const label  = run ? fmt(run.timeMs) + 's' : 'this run';
+      if (!confirm('Delete ' + label + ' from ' + a.name + '?')) return;
+      history = history.filter(x => x.id !== runId);
+      // Recalc athlete PRs from remaining runs
+      const remaining = history.filter(x => x.athleteId === id);
+      if (remaining.length) {
+        const bestTime = Math.min(...remaining.map(x => x.timeMs));
+        const bestMph  = Math.max(...remaining.map(x => parseFloat(x.mph)));
+        a.prTime = bestTime;
+        a.prMph  = bestMph.toFixed(2);
+        a.firstTime = remaining[remaining.length - 1].timeMs;
+        a.runs   = remaining.length;
+      } else {
+        a.prTime = null; a.prMph = null; a.firstTime = null; a.runs = 0;
+      }
+      _drawerSelectedId = null;
+      persist(); renderRoster(); renderDrawer(id); updateStats();
+      toast('Run deleted');
+    });
+  });
 }
+
+let _drawerAthleteId  = null;
+let _drawerSelectedId = null;
 
 function closeDrawer() {
   document.getElementById('drawer-overlay').classList.remove('on');
   document.getElementById('drawer').classList.remove('on');
+  _drawerAthleteId  = null;
+  _drawerSelectedId = null;
 }
 
 document.getElementById('drawer-close').addEventListener('click', closeDrawer);
