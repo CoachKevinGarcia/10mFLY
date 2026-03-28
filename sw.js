@@ -1,13 +1,19 @@
-const CACHE = 'fly10m-v2';
+const CACHE = 'fly10m-v3';
+
+// Only cache what we know exists — omit './' to avoid ambiguous root fetch
 const ASSETS = [
-  './',
-  './index.html',
-  './manifest.json'
+  'index.html',
+  'manifest.json',
+  'icon-192.png',
+  'icon-512.png'
 ];
 
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(ASSETS))
+    caches.open(CACHE).then(c => {
+      // Use individual adds so one failure doesn't kill the whole SW
+      return Promise.allSettled(ASSETS.map(a => c.add(a)));
+    })
   );
   self.skipWaiting();
 });
@@ -22,7 +28,14 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  e.respondWith(
-    caches.match(e.request).then(r => r || fetch(e.request))
-  );
+  // Network first for navigation, cache fallback for assets
+  if (e.request.mode === 'navigate') {
+    e.respondWith(
+      fetch(e.request).catch(() => caches.match('index.html'))
+    );
+  } else {
+    e.respondWith(
+      caches.match(e.request).then(r => r || fetch(e.request))
+    );
+  }
 });
