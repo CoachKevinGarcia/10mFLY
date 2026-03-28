@@ -438,7 +438,9 @@ function doStart() {
   $rstBtn.disabled   = true;
   $saveBtn.disabled  = true;
   $result.classList.remove('on');
-  document.getElementById('tiers').classList.remove('on');
+  const tiersEl2 = document.getElementById('tiers');
+  tiersEl2.classList.remove('on');
+  tiersEl2.innerHTML = '<div class="tier-lbl">Speed Tier</div>';
 }
 
 function doStop() {
@@ -480,6 +482,9 @@ function doReset() {
   $rstBtn.disabled     = true;
   $saveBtn.disabled    = true;
   $result.classList.remove('on');
+  const tiersEl = document.getElementById('tiers');
+  tiersEl.classList.remove('on');
+  tiersEl.innerHTML = '<div class="tier-lbl">Speed Tier</div>';
 }
 
 // ══════════════════════════════════════
