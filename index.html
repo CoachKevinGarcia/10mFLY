@@ -429,6 +429,8 @@
     /* ── LOG ── */
     .l-head  { padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); flex-shrink: 0; }
     .l-title { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 3px; color: var(--muted); }
+    .export-btn { background: none; border: 1px solid var(--green); color: var(--green); font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1px; padding: 7px 12px; border-radius: 8px; cursor: pointer; text-transform: uppercase; transition: all .15s; white-space: nowrap; }
+    .export-btn:hover { background: rgba(0,255,170,.1); }
     .clr-btn { background: none; border: 1px solid var(--border); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1px; padding: 7px 12px; border-radius: 8px; cursor: pointer; text-transform: uppercase; transition: all .15s; }
     .clr-btn:hover { border-color: var(--red); color: var(--red); }
     .l-list  { flex: 1; overflow-y: auto; padding: 10px 20px; }
@@ -483,7 +485,7 @@
   <header>
     <div>
       <div class="app-title">10m FLY</div>
-      <div class="app-sub">Feed The Cats · Speed Timer</div>
+      <div class="app-sub">Speed Timer</div>
     </div>
     <div class="tabs">
       <button class="tab on"  data-view="timer-view">Timer</button>
@@ -557,7 +559,10 @@
     <!-- ══ ROSTER TAB ══ -->
     <div id="roster-view" class="view">
       <div class="r-head">
-        <div class="r-title">Athlete Roster</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div class="r-title" style="margin-bottom:0">Athlete Roster</div>
+          <button class="export-btn" id="export-btn">⬇ EXPORT CSV</button>
+        </div>
         <div class="add-row">
           <input class="txt-in" id="r-input" type="text" placeholder="Athlete name…" autocomplete="off" />
           <button class="plus-btn" id="r-plus">+</button>
@@ -1293,6 +1298,77 @@ document.getElementById('clr-btn').addEventListener('click', () => {
   if (!history.length) return;
   if (confirm('Clear all run logs? (Roster PRs are kept)')) { history = []; persist(); renderLog(); }
 });
+
+// ══════════════════════════════════════
+//  CSV EXPORT
+// ══════════════════════════════════════
+function exportCSV() {
+  if (!roster.length) { toast('No athletes to export'); return; }
+
+  const rows = [];
+
+  // Header row
+  rows.push([
+    'Athlete',
+    'Runs',
+    'PR Time (s)',
+    'PR MPH',
+    'First Run (s)',
+    'Run 1 (s)', 'Run 1 MPH',
+    'Run 2 (s)', 'Run 2 MPH',
+    'Run 3 (s)', 'Run 3 MPH',
+    'Run 4 (s)', 'Run 4 MPH',
+    'Run 5 (s)', 'Run 5 MPH',
+    'Run 6 (s)', 'Run 6 MPH',
+    'Run 7 (s)', 'Run 7 MPH',
+    'Run 8 (s)', 'Run 8 MPH',
+    'Run 9 (s)', 'Run 9 MPH',
+    'Run 10 (s)', 'Run 10 MPH',
+  ].map(csvCell).join(','));
+
+  roster.forEach(a => {
+    const athleteRuns = history.filter(e => e.athleteId === a.id).slice(0, 10);
+    const runCols = [];
+    for (let i = 0; i < 10; i++) {
+      if (athleteRuns[i]) {
+        runCols.push(csvCell((athleteRuns[i].timeMs / 1000).toFixed(3)));
+        runCols.push(csvCell(athleteRuns[i].mph));
+      } else {
+        runCols.push(''); runCols.push('');
+      }
+    }
+    rows.push([
+      csvCell(a.name),
+      csvCell(a.runs || 0),
+      csvCell(a.prTime ? (a.prTime / 1000).toFixed(3) : ''),
+      csvCell(a.prMph  || ''),
+      csvCell(a.firstTime ? (a.firstTime / 1000).toFixed(3) : ''),
+      ...runCols
+    ].join(','));
+  });
+
+  const csv      = rows.join('\n');
+  const blob     = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url      = URL.createObjectURL(blob);
+  const a        = document.createElement('a');
+  const date     = new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }).replace(/ /g,'-').replace(',','');
+  a.href         = url;
+  a.download     = '10mFly-Roster-' + date + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('CSV exported ✓');
+}
+
+function csvCell(val) {
+  const s = String(val);
+  return s.includes(',') || s.includes('"') || s.includes('\n')
+    ? '"' + s.replace(/"/g, '""') + '"'
+    : s;
+}
+
+document.getElementById('export-btn').addEventListener('click', exportCSV);
 
 // ══════════════════════════════════════
 //  TABS
