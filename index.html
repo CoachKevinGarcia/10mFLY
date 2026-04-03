@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#0a0a0a" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="10m Fly" />
-  <title>10m Fly Timer</title>
+  <meta name="apple-mobile-web-app-title" content="Fly Timer" />
+  <title>Fly Timer</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -28,6 +28,7 @@
       --green:    #00ffaa;
       --blue:     #00ddff;
       --orange:   #ffb300;
+      --purple:   #bf5fff;
     }
 
     html, body {
@@ -44,6 +45,45 @@
       position: relative; overflow: hidden;
     }
 
+    /* ── HOME SCREEN ── */
+    #home-screen {
+      display: flex; flex-direction: column;
+      height: 100%; height: 100dvh;
+      max-width: 480px; margin: 0 auto;
+      background: var(--bg);
+    }
+    .home-header {
+      padding: 28px 24px 20px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .home-title { font-family:'Bebas Neue',sans-serif; font-size:36px; letter-spacing:4px; color:var(--accent); line-height:1; }
+    .home-sub   { font-size:9px; letter-spacing:3px; color:var(--text); text-transform:uppercase; margin-top:4px; }
+    .home-body  { flex:1; display:flex; flex-direction:column; justify-content:center; padding:32px 24px; gap:16px; }
+    .home-card  {
+      background: var(--surface); border-radius: 18px;
+      padding: 28px 24px; cursor: pointer; transition: all .15s;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .home-card:active { background: var(--surface2); transform: scale(.98); }
+    .home-card-title { font-family:'Bebas Neue',sans-serif; font-size:30px; letter-spacing:3px; line-height:1; }
+    .home-card-sub   { font-size:10px; letter-spacing:2px; color:var(--text); text-transform:uppercase; }
+    .home-card-desc  { font-size:11px; color:var(--text); margin-top:6px; letter-spacing:.5px; line-height:1.5; }
+    /* 10m = green border + green title */
+    .home-card.m10 { border: 1px solid rgba(0,255,170,.3); }
+    .home-card.m10 .home-card-title { color: var(--green); }
+    .home-card.m10:active { border-color: rgba(0,255,170,.5); }
+    /* 30m = purple border + purple title */
+    .home-card.m30 { border: 1px solid rgba(191,95,255,.3); }
+    .home-card.m30 .home-card-title { color: var(--purple); }
+    .home-card.m30:active { border-color: rgba(191,95,255,.5); }
+    .home-footer { padding: 20px 24px; flex-shrink:0; border-top: 1px solid var(--border); text-align:center; }
+    .home-footer-txt { font-size: 9px; letter-spacing: 2px; color: var(--text); text-transform: uppercase; }
+
+    /* ── APP SHELL (timer/roster/log) ── */
+    #app-shell { display:none; flex-direction:column; height:100%; height:100dvh; }
+    #app-shell.on { display:flex; }
+
     /* ── HEADER ── */
     header {
       display: flex; align-items: center; justify-content: space-between;
@@ -51,31 +91,33 @@
       flex-shrink: 0; position: relative; z-index: 10;
       background: var(--bg);
     }
-    .app-title { font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:3px; color:var(--accent); line-height:1; }
-    .app-sub   { font-size:8px; letter-spacing:2px; color:var(--muted); text-transform:uppercase; margin-top:2px; }
+    .header-left { display:flex; align-items:center; gap:12px; }
+    .back-btn {
+      background: none; border: 1px solid var(--border); border-radius: 8px;
+      color: var(--text); font-family:'IBM Plex Mono',monospace; font-size:11px;
+      letter-spacing:1px; padding:7px 10px; cursor:pointer; transition:all .15s;
+      text-transform:uppercase; white-space:nowrap;
+    }
+    .back-btn:active { background: var(--surface2); }
+    .app-title { font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:3px; color:var(--accent); line-height:1; }
+    .app-title.m30 { color: var(--purple); }
+    .app-sub   { font-size:8px; letter-spacing:2px; color:var(--text); text-transform:uppercase; margin-top:2px; }
     .tabs { display:flex; gap:3px; background:var(--surface); border-radius:10px; padding:4px; border:1px solid var(--border); }
-    .tab  { background:none; border:none; color:var(--muted); font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:1px; padding:7px 12px; border-radius:7px; cursor:pointer; transition:all .15s; text-transform:uppercase; white-space:nowrap; }
+    .tab  { background:none; border:none; color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:1px; padding:7px 12px; border-radius:7px; cursor:pointer; transition:all .15s; text-transform:uppercase; white-space:nowrap; }
     .tab.on { background:var(--accent); color:#000; font-weight:700; }
+    .tab.on.m30 { background:var(--purple); }
 
-    /* ── SCREEN SYSTEM ──
-       Three screens live in a sliding container.
-       Timer (index 0) → Results (index 1)
-       translate(-100%) = timer visible
-       translate(0%)    = results visible
-    */
+    /* ── SCREEN SYSTEM ── */
     .screen-wrap {
       flex: 1; display: flex; overflow: hidden; min-height: 0;
       position: relative;
     }
-
-    /* Tab views (Timer / Roster / Log) */
     .view { display:none; flex-direction:column; flex:1; overflow:hidden; min-height:0; }
     .view.on { display:flex; }
 
     /* ── TIMER SCREEN ── */
     #timer-view { position: relative; }
 
-    /* The sliding panel that holds timer + results side by side */
     .slide-track {
       display: flex; width: 200%; height: 100%;
       transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -89,20 +131,17 @@
     }
 
     /* ── TIMER PANEL ── */
-    .timer-panel {
-      flex: 1; display: flex; flex-direction: column;
-    }
+    .timer-panel { flex: 1; display: flex; flex-direction: column; }
 
     .clock-area {
       flex: 1; display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      padding: 20px 24px;
-      gap: 8px;
+      padding: 20px 24px; gap: 8px;
     }
 
     .state-lbl {
       font-size: 11px; letter-spacing: 4px; text-transform: uppercase;
-      color: var(--muted); transition: color .2s;
+      color: var(--text); transition: color .2s;
     }
     .state-lbl.run  { color: var(--green); }
 
@@ -115,13 +154,28 @@
     .clock.run { color: var(--green); }
 
     .clock-sub {
-      font-size: 11px; letter-spacing: 3px; color: var(--muted);
-      text-transform: uppercase; margin-top: 4px;
+      font-size: 11px; letter-spacing: 3px; color: var(--text);
+      text-transform: uppercase; margin-top: 4px; text-align:center;
     }
+
+    /* Build-up selector */
+    .buildup-wrap {
+      padding: 0 20px 8px; flex-shrink: 0;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .buildup-lbl { font-size: 9px; letter-spacing: 2px; color: var(--text); text-transform: uppercase; white-space:nowrap; }
+    .buildup-chips { display:flex; gap:6px; }
+    .bu-chip {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 20px; padding: 7px 14px; font-size:11px; cursor:pointer;
+      transition:all .15s; color: var(--text); font-family:'IBM Plex Mono',monospace;
+      letter-spacing:1px;
+    }
+    .bu-chip.on { background: var(--purple); color: #fff; border-color: var(--purple); font-weight:700; }
 
     /* Queue */
     .q-wrap { padding: 0 20px 10px; flex-shrink: 0; }
-    .q-lbl  { font-size: 9px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; }
+    .q-lbl  { font-size: 9px; letter-spacing: 2px; color: var(--text); text-transform: uppercase; margin-bottom: 6px; }
     .q-strip {
       display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px;
       -webkit-overflow-scrolling: touch; scrollbar-width: none;
@@ -130,11 +184,12 @@
     .qchip {
       flex-shrink: 0; background: var(--surface2); border: 1px solid var(--border);
       border-radius: 24px; padding: 10px 18px; font-size: 13px; cursor: pointer;
-      transition: all .15s; white-space: nowrap; color: var(--muted);
+      transition: all .15s; white-space: nowrap; color: var(--text);
     }
     .qchip.on   { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 700; }
+    .qchip.on.m30 { background: var(--purple); color: #fff; border-color: var(--purple); }
     .qchip.done { background: var(--surface); border-color: var(--green); color: var(--green); }
-    .q-none { font-size: 11px; color: var(--muted); letter-spacing: 1px; padding: 4px 0; }
+    .q-none { font-size: 11px; color: var(--text); letter-spacing: 1px; padding: 4px 0; }
 
     .add-row { display: flex; gap: 8px; margin-top: 8px; }
     .txt-in {
@@ -143,12 +198,14 @@
       font-size: 14px; padding: 12px 14px; outline: none;
     }
     .txt-in:focus { border-color: var(--accent); }
+    .txt-in:focus.m30 { border-color: var(--purple); }
     .txt-in::placeholder { color: var(--muted); }
     .plus-btn {
       background: var(--surface2); border: 1px solid var(--border); border-radius: 10px;
       color: var(--accent); font-family: 'Bebas Neue', sans-serif; font-size: 24px;
       padding: 0 18px; cursor: pointer; transition: background .15s;
     }
+    .plus-btn.m30 { color: var(--purple); }
     .plus-btn:active { background: var(--surface3); }
 
     /* Timer buttons */
@@ -167,6 +224,7 @@
     .btn-start { background: var(--green);   color: #000; }
     .btn-stop  { background: var(--red);     color: #fff; }
     .btn-save  { background: var(--accent);  color: #000; }
+    .btn-save.m30 { background: var(--purple); color:#fff; }
     .btn-new   { background: var(--green);   color: #000; }
     .btn-ghost { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
     .btn:disabled { opacity: .3; pointer-events: none; }
@@ -190,10 +248,11 @@
       flex-shrink: 0;
     }
     .res-athlete {
-      font-size: 11px; letter-spacing: 3px; color: var(--muted);
+      font-size: 11px; letter-spacing: 3px; color: var(--text);
       text-transform: uppercase; margin-bottom: 4px;
     }
     .res-athlete span { color: var(--accent); }
+    .res-athlete span.m30 { color: var(--purple); }
 
     /* Big numbers */
     .res-numbers {
@@ -205,11 +264,29 @@
       background: var(--surface); border: 1px solid var(--border);
       border-radius: 16px; padding: 18px 10px; margin: 0 5px;
     }
-    .res-chip-lbl { font-size: 9px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; }
+    .res-chip-lbl { font-size: 9px; letter-spacing: 2px; color: var(--text); text-transform: uppercase; margin-bottom: 6px; }
     .res-chip-val { font-family: 'Bebas Neue', sans-serif; font-size: 56px; letter-spacing: 1px; line-height: 1; }
-    .res-chip-val.t { color: var(--text); }
-    .res-chip-val.m { color: var(--accent); }
-    .res-chip-unit { font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-top: 3px; }
+    .res-chip-val.t  { color: var(--text); }
+    .res-chip-val.ms { color: var(--purple); }
+    .res-chip-val.m  { color: var(--accent); }
+    .res-chip-unit { font-size: 10px; color: var(--text); letter-spacing: 1px; margin-top: 3px; }
+
+    /* 30m extra metrics */
+    .res-extra {
+      display: flex; gap: 0; width: 100%; padding: 0 20px;
+      margin-top: 8px; flex-shrink: 0;
+    }
+    .res-extra-chip {
+      flex: 1; text-align: center;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 10px 8px; margin: 0 5px;
+    }
+    .res-extra-lbl { font-size: 8px; letter-spacing: 1.5px; color: var(--text); text-transform: uppercase; margin-bottom: 4px; }
+    .res-extra-val { font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: var(--text); letter-spacing: 1px; line-height: 1; }
+    .res-buildup-tag {
+      font-size: 9px; letter-spacing: 2px; color: var(--purple); text-transform: uppercase;
+      text-align:center; margin-top:6px; flex-shrink:0;
+    }
 
     /* PR badges */
     .res-prs {
@@ -220,15 +297,16 @@
       display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
       padding: 4px 10px; border-radius: 6px; text-transform: uppercase;
     }
-    .pr-tag.t { background: var(--blue);   color: #000; }
-    .pr-tag.m { background: var(--orange); color: #000; }
+    .pr-tag.t  { background: var(--blue);   color: #000; }
+    .pr-tag.m  { background: var(--orange); color: #000; }
+    .pr-tag.ms { background: var(--purple); color: #fff; }
 
     /* Tier list */
     .res-tiers {
       flex: 1; overflow-y: auto; padding: 14px 20px 0;
       -webkit-overflow-scrolling: touch;
     }
-    .tier-lbl { font-size: 9px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; }
+    .tier-lbl { font-size: 9px; letter-spacing: 2px; color: var(--text); text-transform: uppercase; margin-bottom: 8px; }
     .tier-row {
       display: flex; align-items: center; gap: 12px;
       background: var(--surface); border: 1px solid var(--border);
@@ -239,7 +317,7 @@
     .tier-dot  { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
     .tier-info { flex: 1; }
     .tier-name  { font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
-    .tier-range { font-size: 10px; color: var(--muted); margin-top: 2px; letter-spacing: 1px; }
+    .tier-range { font-size: 10px; color: var(--text); margin-top: 2px; letter-spacing: 1px; }
     .tier-you {
       font-size: 10px; font-weight: 700; letter-spacing: 1px;
       padding: 4px 10px; border-radius: 6px; text-transform: uppercase; flex-shrink: 0;
@@ -277,7 +355,7 @@
 
     /* ── ROSTER ── */
     .r-head  { padding: 14px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-    .r-title { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 3px; color: var(--muted); margin-bottom: 8px; }
+    .r-title { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 3px; color: var(--text); margin-bottom: 8px; }
     .r-list  { flex: 1; overflow-y: auto; padding: 10px 20px; }
     .r-card  {
       background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
@@ -285,18 +363,38 @@
       display: grid; grid-template-columns: 1fr auto; gap: 3px 10px;
     }
     .r-name  { font-size: 15px; font-weight: 600; color: var(--text); }
-    .r-runcount { font-size: 12px; font-weight: 400; color: var(--muted); letter-spacing: 0; }
-    .r-prs   { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 5px; }
+    .r-runcount { font-size: 12px; font-weight: 400; color: var(--text); letter-spacing: 0; }
+
+    /* ── TWO-COLUMN PR LAYOUT (home roster + drawer) ── */
+    .pr-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+    .pr-col  { border-radius: 8px; padding: 8px 10px; background: var(--surface2); }
+    .pr-col-10 { border: 1px solid rgba(0,255,170,.35); }
+    .pr-col-10 .pr-col-lbl { color: var(--green); }
+    .pr-col-30 { border: 1px solid rgba(191,95,255,.35); }
+    .pr-col-30 .pr-col-lbl { color: var(--purple); }
+    .pr-col-empty { border-color: var(--border) !important; }
+    .pr-col-empty .pr-col-lbl { color: var(--text) !important; }
+    .pr-col-lbl { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 7px; text-align: center; }
+    .pr-pills { display: flex; flex-direction: column; gap: 4px; align-items: center; }
+    .pr-col-none { font-size: 10px; color: var(--text); text-align: center; padding: 4px 0; }
+
+    /* pills — unified style, same colors for 10m and 30m */
+    .r-prs   { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; justify-content: center; }
     .r-pill  { font-size: 10px; letter-spacing: 1px; padding: 3px 9px; border-radius: 12px; font-weight: 600; }
-    .r-pill.t { background: rgba(0,207,255,.15); color: var(--blue);   border: 1px solid rgba(0,207,255,.3); }
-    .r-pill.m { background: rgba(255,159,0,.15); color: var(--orange); border: 1px solid rgba(255,159,0,.3); }
-    .r-pill.n { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
-    .r-pill.f { background: rgba(0,255,136,.15); color: var(--green); border: 1px solid rgba(0,255,136,.3); }
-    .r-pill.c { background: rgba(240,240,240,.08); color: var(--text); border: 1px solid rgba(240,240,240,.15); }
-    .r-runs  { font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-top: 3px; }
+    .r-pill.t  { background: rgba(0,207,255,.15); color: var(--blue);   border: 1px solid rgba(0,207,255,.3); }
+    .r-pill.m  { background: rgba(255,159,0,.15);  color: var(--orange); border: 1px solid rgba(255,159,0,.3); }
+    .r-pill.f  { background: rgba(0,255,136,.15);  color: var(--green);  border: 1px solid rgba(0,255,136,.3); }
+    .r-pill.n  { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+
     .r-del   { background: none; border: none; color: var(--red); font-size: 18px; cursor: pointer; padding: 4px; transition: color .15s; align-self: start; opacity: .6; }
     .r-del:hover { opacity: 1; }
-    .r-empty { text-align: center; padding: 50px 20px; color: var(--muted); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; }
+    .r-empty { text-align: center; padding: 50px 20px; color: var(--text); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; }
+
+    /* roster section dividers */
+    .r-section-lbl {
+      font-size: 9px; letter-spacing: 2px; color: var(--text); text-transform: uppercase;
+      padding: 4px 2px 6px; margin-top: 6px;
+    }
 
     /* ── ATHLETE DRAWER ── */
     .drawer-overlay {
@@ -329,31 +427,43 @@
     }
     .drawer-name { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 2px; color: var(--text); }
     .drawer-close {
-      background: none; border: none; color: var(--muted); font-size: 22px;
+      background: none; border: none; color: var(--text); font-size: 22px;
       cursor: pointer; padding: 4px; line-height: 1;
     }
     .drawer-prs {
-      display: flex; gap: 8px; padding: 10px 20px;
-      border-bottom: 1px solid var(--border); flex-shrink: 0; flex-wrap: wrap;
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--border); flex-shrink: 0;
     }
+    .drawer-tabs {
+      display:flex; gap:0; border-bottom:1px solid var(--border); flex-shrink:0;
+    }
+    .drawer-tab {
+      flex:1; background:none; border:none; color:var(--text); font-family:'IBM Plex Mono',monospace;
+      font-size:10px; letter-spacing:1px; padding:10px 8px; cursor:pointer;
+      text-transform:uppercase; border-bottom:2px solid transparent; transition:all .15s;
+    }
+    .drawer-tab.on { color:var(--accent); border-bottom-color:var(--accent); }
+    .drawer-tab.on.m30 { color:var(--purple); border-bottom-color:var(--purple); }
     .drawer-section-lbl {
-      font-size: 9px; letter-spacing: 2px; color: var(--muted);
+      font-size: 9px; letter-spacing: 2px; color: var(--text);
       text-transform: uppercase; padding: 10px 20px 6px; flex-shrink: 0;
     }
     .drawer-runs { overflow-y: auto; flex: 1; padding: 0 20px 20px; }
 
-    /* drun-row styles consolidated below in run selection section */
-    .drun-num { font-size: 10px; color: var(--muted); width: 20px; text-align: right; flex-shrink: 0; }
+    .drun-num  { font-size: 10px; color: var(--text); width: 20px; text-align: right; flex-shrink: 0; }
     .drun-time { font-family: 'Bebas Neue', sans-serif; font-size: 26px; color: var(--accent); letter-spacing: 1px; line-height: 1; }
+    .drun-time.m30 { color: var(--purple); }
+    .drun-ms   { font-size: 14px; color: var(--purple); font-weight: 700; letter-spacing: 1px; }
     .drun-mph  { font-size: 11px; color: var(--green); font-weight: 600; letter-spacing: 1px; }
-    .drun-date { font-size: 9px; color: var(--muted); letter-spacing: 1px; margin-top: 1px; }
+    .drun-date { font-size: 9px; color: var(--text); letter-spacing: 1px; margin-top: 1px; }
+    .drun-bu   { font-size: 9px; color: var(--purple); letter-spacing: 1px; margin-top: 1px; }
     .drun-tags { display: flex; gap: 4px; margin-top: 3px; }
     .drun-pr   { font-size: 8px; font-weight: 700; letter-spacing: 1px; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
-    .drun-pr.t { background: var(--blue);   color: #000; }
-    .drun-pr.m { background: var(--orange); color: #000; }
-    .drawer-empty { text-align: center; padding: 30px 20px; color: var(--muted); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; }
+    .drun-pr.t  { background: var(--blue);   color: #000; }
+    .drun-pr.m  { background: var(--orange); color: #000; }
+    .drun-pr.ms { background: var(--purple); color: #fff; }
+    .drawer-empty { text-align: center; padding: 30px 20px; color: var(--text); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; }
 
-    /* run row selection */
     .drun-row { cursor: pointer; border-radius: 8px; padding: 10px 6px; margin: 0 -6px; transition: background .15s; }
     .drun-row:hover { background: var(--surface2); }
     .drun-row.selected { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; }
@@ -375,18 +485,18 @@
       background: var(--surface); border: 1px solid var(--border);
       border-radius: 12px; padding: 12px 14px; margin-bottom: 10px;
     }
-    .r-key-title { font-size: 9px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; }
+    .r-key-title { font-size: 9px; letter-spacing: 2px; color: var(--text); text-transform: uppercase; margin-bottom: 8px; }
     .r-key-row   { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
     .r-key-row:last-child { margin-bottom: 0; }
     .r-key-pill  { font-size: 10px; font-weight: 600; letter-spacing: 1px; padding: 2px 9px; border-radius: 10px; flex-shrink: 0; }
-    .r-key-pill.t { background: rgba(0,221,255,.15); color: var(--blue);   border: 1px solid rgba(0,221,255,.3); }
-    .r-key-pill.m { background: rgba(255,179,0,.15); color: var(--orange); border: 1px solid rgba(255,179,0,.3); }
-    .r-key-pill.f { background: rgba(0,255,170,.15); color: var(--green);  border: 1px solid rgba(0,255,170,.3); }
-    .r-key-meaning { font-size: 11px; color: var(--muted); letter-spacing: 0.5px; }
+    .r-key-pill.t  { background: rgba(0,221,255,.15); color: var(--blue);   border: 1px solid rgba(0,221,255,.3); }
+    .r-key-pill.m  { background: rgba(255,179,0,.15); color: var(--orange); border: 1px solid rgba(255,179,0,.3); }
+    .r-key-pill.f  { background: rgba(0,255,170,.15); color: var(--green);  border: 1px solid rgba(0,255,170,.3); }
+    .r-key-meaning { font-size: 11px; color: var(--text); letter-spacing: 0.5px; }
 
     /* inline name edit */
     .r-name-wrap { display: flex; align-items: center; gap: 8px; }
-    .r-edit-btn  { background: none; border: none; color: var(--muted); font-size: 13px; cursor: pointer; padding: 0 2px; opacity: .6; transition: opacity .15s; flex-shrink: 0; }
+    .r-edit-btn  { background: none; border: none; color: var(--text); font-size: 13px; cursor: pointer; padding: 0 2px; opacity: .6; transition: opacity .15s; flex-shrink: 0; }
     .r-edit-btn:hover { opacity: 1; }
     .r-name-input {
       font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 600;
@@ -395,8 +505,8 @@
       outline: none; width: 100%;
     }
     .r-name-actions { display: flex; gap: 6px; margin-top: 6px; }
-    .r-name-save { background: var(--accent); color: #000; border: none; border-radius: 8px; font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 1px; padding: 6px 14px; cursor: pointer; }
-    .r-name-cancel { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); border-radius: 8px; font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 1px; padding: 6px 14px; cursor: pointer; }
+    .r-name-save   { background: var(--accent); color: #000; border: none; border-radius: 8px; font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 1px; padding: 6px 14px; cursor: pointer; }
+    .r-name-cancel { background: var(--surface2); color: var(--text); border: 1px solid var(--border); border-radius: 8px; font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 1px; padding: 6px 14px; cursor: pointer; }
 
     /* duplicate modal */
     .modal-overlay {
@@ -413,25 +523,24 @@
     }
     .modal-overlay.on .modal { transform: translateY(0); }
     .modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 2px; color: var(--accent); margin-bottom: 8px; }
-    .modal-body  { font-size: 12px; color: var(--muted); line-height: 1.6; margin-bottom: 20px; }
+    .modal-body  { font-size: 12px; color: var(--text); line-height: 1.6; margin-bottom: 20px; }
     .modal-body strong { color: var(--text); }
     .modal-btns  { display: flex; flex-direction: column; gap: 8px; }
     .modal-btn   { border: none; border-radius: 10px; font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 2px; padding: 16px; cursor: pointer; transition: opacity .15s; }
     .modal-btn:active { opacity: .8; }
     .modal-btn.merge    { background: var(--green);    color: #000; }
     .modal-btn.overwrite{ background: var(--orange);   color: #000; }
-    .modal-btn.cancel   { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+    .modal-btn.cancel   { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
 
-    /* make roster cards look tappable */
     .r-card { cursor: pointer; transition: background .15s; }
     .r-card:active { background: var(--surface2); }
 
     /* ── LOG ── */
     .l-head  { padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-    .l-title { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 3px; color: var(--muted); }
+    .l-title { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 3px; color: var(--text); }
     .export-btn { background: none; border: 1px solid var(--green); color: var(--green); font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1px; padding: 7px 12px; border-radius: 8px; cursor: pointer; text-transform: uppercase; transition: all .15s; white-space: nowrap; }
     .export-btn:hover { background: rgba(0,255,170,.1); }
-    .clr-btn { background: none; border: 1px solid var(--border); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1px; padding: 7px 12px; border-radius: 8px; cursor: pointer; text-transform: uppercase; transition: all .15s; }
+    .clr-btn { background: none; border: 1px solid var(--border); color: var(--text); font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1px; padding: 7px 12px; border-radius: 8px; cursor: pointer; text-transform: uppercase; transition: all .15s; }
     .clr-btn:hover { border-color: var(--red); color: var(--red); }
     .l-list  { flex: 1; overflow-y: auto; padding: 10px 20px; }
     .l-list::-webkit-scrollbar { width: 3px; }
@@ -444,14 +553,18 @@
     .l-card.pt { border-color: rgba(0,207,255,.4); }
     .l-card.pm { border-color: rgba(255,159,0,.4); }
     .l-card.pb { border-color: rgba(232,255,0,.5); }
+    .l-card.p30 { border-color: rgba(191,95,255,.5); }
     .l-name   { font-size: 14px; font-weight: 600; color: var(--text); }
-    .l-meta   { font-size: 9px; color: var(--muted); letter-spacing: 1px; margin-top: 2px; }
+    .l-meta   { font-size: 9px; color: var(--text); letter-spacing: 1px; margin-top: 2px; }
+    .l-type   { font-size: 8px; letter-spacing: 1.5px; color: var(--purple); text-transform: uppercase; margin-top: 1px; }
     .l-badges { display: flex; gap: 5px; margin-top: 4px; }
     .l-time   { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--accent); letter-spacing: 1px; line-height: 1; text-align: right; }
+    .l-time.m30 { color: var(--purple); }
     .l-mph    { font-size: 12px; color: var(--green); font-weight: 600; text-align: right; letter-spacing: 1px; margin-top: 2px; }
+    .l-ms     { font-size: 11px; color: var(--purple); font-weight: 600; text-align: right; letter-spacing: 1px; }
     .l-del    { background: none; border: none; color: var(--red); font-size: 16px; cursor: pointer; padding: 4px; transition: opacity .15s; opacity: .6; }
     .l-del:hover { opacity: 1; }
-    .l-empty  { text-align: center; padding: 60px 20px; color: var(--muted); }
+    .l-empty  { text-align: center; padding: 60px 20px; color: var(--text); }
     .l-empty-ico { font-size: 48px; margin-bottom: 12px; opacity: .3; }
     .l-empty-txt { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; }
 
@@ -461,7 +574,7 @@
       padding-bottom: calc(10px + env(safe-area-inset-bottom));
     }
     .sitem { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 9px 8px; text-align: center; }
-    .slbl  { font-size: 8px; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; margin-bottom: 3px; }
+    .slbl  { font-size: 8px; letter-spacing: 1.5px; color: var(--text); text-transform: uppercase; margin-bottom: 3px; }
     .sval  { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--accent); letter-spacing: 1px; line-height: 1; }
 
     /* Toast */
@@ -472,20 +585,54 @@
       font-size: 12px; letter-spacing: 1px; padding: 11px 22px; border-radius: 24px;
       opacity: 0; transition: all .25s; pointer-events: none; white-space: nowrap; z-index: 999;
     }
-    #toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
-    #toast.pr { border-color: var(--accent); color: var(--accent); }
+    #toast.on  { opacity: 1; transform: translateX(-50%) translateY(0); }
+    #toast.pr  { border-color: var(--accent); color: var(--accent); }
+    #toast.m30 { border-color: var(--purple); color: var(--purple); }
 
     @keyframes ci { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
     .r-card, .l-card { animation: ci .2s ease; }
   </style>
 </head>
 <body>
+
+<!-- ══════════════════════════════════════
+     HOME SCREEN
+══════════════════════════════════════ -->
+<div id="home-screen">
+  <div class="home-header">
+    <div class="home-title">FLY TIMER</div>
+    <div class="home-sub">Jurupa Valley Jaguars · Speed Lab</div>
+  </div>
+  <div class="home-body">
+    <div class="home-card m10" id="home-10m">
+      <div class="home-card-title">10m FLY</div>
+      <div class="home-card-sub">Peak Speed · Burst</div>
+      <div class="home-card-desc">Measures top-end burst speed over a 10-meter fly window. Best for acceleration and short-speed profiling.</div>
+    </div>
+    <div class="home-card m30" id="home-30m">
+      <div class="home-card-title">30m FLY</div>
+      <div class="home-card-sub">Max Velocity · True Top Speed</div>
+      <div class="home-card-desc">Measures maximum velocity over a 30-meter fly window. The single most important speed metric for sprinters and jumpers.</div>
+    </div>
+  </div>
+  <div class="home-footer">
+    <div class="home-footer-txt">Tap a module to enter</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     APP SHELL (shared by both modes)
+══════════════════════════════════════ -->
+<div id="app-shell">
 <div id="app">
 
   <header>
-    <div>
-      <div class="app-title">10m FLY</div>
-      <div class="app-sub">Speed Timer</div>
+    <div class="header-left">
+      <button class="back-btn" id="back-btn">← Home</button>
+      <div>
+        <div class="app-title" id="app-title">10m FLY</div>
+        <div class="app-sub" id="app-sub">Speed Timer</div>
+      </div>
     </div>
     <div class="tabs">
       <button class="tab on"  data-view="timer-view">Timer</button>
@@ -508,6 +655,16 @@
             <div class="clock-sub" id="clock-sub">TAP START WHEN ATHLETE ENTERS ZONE</div>
           </div>
 
+          <!-- Build-up selector — only shown in 30m mode -->
+          <div class="buildup-wrap" id="buildup-wrap" style="display:none">
+            <div class="buildup-lbl">Build-up:</div>
+            <div class="buildup-chips">
+              <div class="bu-chip" data-bu="20">20m</div>
+              <div class="bu-chip on" data-bu="30">30m</div>
+              <div class="bu-chip" data-bu="40">40m</div>
+            </div>
+          </div>
+
           <div class="q-wrap">
             <div class="q-lbl">Athlete — tap to select</div>
             <div class="q-strip" id="q-strip"></div>
@@ -528,18 +685,13 @@
             <div class="res-athlete" id="res-athlete">—</div>
           </div>
 
-          <div class="res-numbers">
-            <div class="res-chip">
-              <div class="res-chip-lbl">Time</div>
-              <div class="res-chip-val t" id="res-t">—</div>
-              <div class="res-chip-unit">seconds</div>
-            </div>
-            <div class="res-chip">
-              <div class="res-chip-lbl">Top Speed</div>
-              <div class="res-chip-val m" id="res-m">—</div>
-              <div class="res-chip-unit">mph</div>
-            </div>
+          <div class="res-numbers" id="res-numbers">
+            <!-- populated by renderResults() -->
           </div>
+
+          <!-- 30m extra row (m/s + km/h) -->
+          <div class="res-extra" id="res-extra" style="display:none"></div>
+          <div class="res-buildup-tag" id="res-buildup-tag"></div>
 
           <div class="res-prs" id="res-prs"></div>
 
@@ -560,7 +712,7 @@
     <div id="roster-view" class="view">
       <div class="r-head">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <div class="r-title" style="margin-bottom:0">Athlete Roster</div>
+        <div class="r-title" id="r-title-el" style="margin-bottom:0">Athlete Roster</div>
           <button class="export-btn" id="export-btn">⬇ EXPORT CSV</button>
         </div>
         <div class="add-row">
@@ -587,6 +739,7 @@
 
   </div><!-- /screen-wrap -->
 </div>
+</div><!-- /app-shell -->
 
 <!-- ── DUPLICATE MODAL ── -->
 <div class="modal-overlay" id="dup-overlay">
@@ -610,6 +763,10 @@
     <button class="drawer-close" id="drawer-close">✕</button>
   </div>
   <div class="drawer-prs" id="drawer-prs"></div>
+  <div class="drawer-tabs" id="drawer-tabs">
+    <button class="drawer-tab on" data-dtab="10m">10m Fly</button>
+    <button class="drawer-tab m30" data-dtab="30m">30m Fly</button>
+  </div>
   <div class="drawer-section-lbl">Last 10 Runs</div>
   <div class="drawer-runs" id="drawer-runs"></div>
 </div>
@@ -618,10 +775,15 @@
 
 <script>
 // ══════════════════════════════════════
+//  MODE  ('10m' or '30m')
+// ══════════════════════════════════════
+let currentMode = '10m';
+
+// ══════════════════════════════════════
 //  DATA
 // ══════════════════════════════════════
-let roster   = [];
-let history  = [];
+let roster  = [];
+let history = [];   // entries have: { id, athleteId, name, mode, timeMs, mph, ms, kmh, buildUp, isPrTime, isPrMph, isPrMs, timestamp }
 let activeId = null;
 
 function load() {
@@ -637,18 +799,31 @@ load();
 // Backfill firstTime for athletes who were saved before this field existed
 roster.forEach(a => {
   if (!a.firstTime) {
-    // history is newest-first, so oldest run is last in the filtered array
-    const runs = history.filter(e => e.athleteId === a.id);
+    const runs = history.filter(e => e.athleteId === a.id && (!e.mode || e.mode === '10m'));
     if (runs.length) a.firstTime = runs[runs.length - 1].timeMs;
+  }
+  // Ensure 30m PR fields exist
+  if (a.pr30Ms  === undefined) a.pr30Ms  = null;
+  if (a.pr30Mph === undefined) a.pr30Mph = null;
+  if (a.runs30  === undefined) a.runs30  = 0;
+  if (a.first30Time === undefined) {
+    const runs30 = history.filter(e => e.athleteId === a.id && e.mode === '30m');
+    a.first30Time = runs30.length ? runs30[runs30.length - 1].timeMs : null;
   }
 });
 persist();
 
 // ══════════════════════════════════════
-//  DRAWER STATE (declared early so all functions can access)
+//  DRAWER STATE
 // ══════════════════════════════════════
 let _drawerAthleteId  = null;
 let _drawerSelectedId = null;
+let _drawerTab        = '10m'; // '10m' or '30m'
+
+// ══════════════════════════════════════
+//  BUILD-UP STATE (30m mode)
+// ══════════════════════════════════════
+let currentBuildUp = 30; // default 30m
 
 // ══════════════════════════════════════
 //  TIMER
@@ -665,7 +840,14 @@ const $mainBtn  = document.getElementById('main-btn');
 const $track    = document.getElementById('slide-track');
 
 function fmt(n)  { return Math.floor(n/1000) + '.' + String(n%1000).padStart(3,'0'); }
-function mph(n)  { return (22.37 / (n/1000)).toFixed(2); }
+
+// 10m speed: distance=10m, time in ms
+function calc10mMph(timeMs) { return (22.37 / (timeMs / 1000)).toFixed(2); }
+
+// 30m speed calculations
+function calc30mMs(timeMs)  { return (30 / (timeMs / 1000)).toFixed(3); }   // m/s
+function calc30mMph(timeMs) { return ((30 / (timeMs / 1000)) * 2.237).toFixed(2); }  // mph
+function calc30mKmh(timeMs) { return ((30 / (timeMs / 1000)) * 3.6).toFixed(2); }   // km/h
 
 function tick() {
   ms = Date.now() - t0;
@@ -673,21 +855,19 @@ function tick() {
   raf = requestAnimationFrame(tick);
 }
 
-// START
 function doStart() {
   state = 'running';
   t0    = Date.now() - ms;
   raf   = requestAnimationFrame(tick);
 
-  $clock.className    = 'clock run';
-  $slbl.textContent   = activeId ? nameOf(activeId).toUpperCase() : 'RUNNING';
-  $slbl.className     = 'state-lbl run';
+  $clock.className      = 'clock run';
+  $slbl.textContent     = activeId ? nameOf(activeId).toUpperCase() : 'RUNNING';
+  $slbl.className       = 'state-lbl run';
   $clockSub.textContent = 'TAP STOP WHEN ATHLETE CLEARS ZONE';
   $mainBtn.textContent  = 'STOP';
   $mainBtn.className    = 'btn btn-stop pulsing';
 }
 
-// STOP → show results screen
 function doStop() {
   if (state !== 'running') return;
   state = 'stopped';
@@ -695,40 +875,94 @@ function doStop() {
   ms = Date.now() - t0;
   $clock.textContent = fmt(ms);
 
-  // Populate results panel
-  const speed = mph(ms);
-  document.getElementById('res-t').textContent = fmt(ms);
-  document.getElementById('res-m').textContent = speed;
-
   const athleteName = activeId ? nameOf(activeId) : null;
   const resAthlete  = document.getElementById('res-athlete');
+  const spanCls = currentMode === '30m' ? 'm30' : '';
   resAthlete.innerHTML = athleteName
-    ? 'Result for <span>' + esc(athleteName) + '</span>'
+    ? `Result for <span class="${spanCls}">${esc(athleteName)}</span>`
     : 'Result';
 
+  renderResults(ms);
+
   // PR badges
-  const pr = checkPR(activeId, ms, parseFloat(speed));
   const prsEl = document.getElementById('res-prs');
   prsEl.innerHTML = '';
-  if (pr.time) prsEl.innerHTML += '<span class="pr-tag t">PR TIME ⚡</span>';
-  if (pr.mph)  prsEl.innerHTML += '<span class="pr-tag m">PR MPH 🔥</span>';
+  if (currentMode === '10m') {
+    const speed = parseFloat(calc10mMph(ms));
+    const pr = checkPR10m(activeId, ms, speed);
+    if (pr.time) prsEl.innerHTML += '<span class="pr-tag t">PR TIME ⚡</span>';
+    if (pr.mph)  prsEl.innerHTML += '<span class="pr-tag m">PR MPH 🔥</span>';
+  } else {
+    const msVal = parseFloat(calc30mMs(ms));
+    const mphVal = parseFloat(calc30mMph(ms));
+    const pr = checkPR30m(activeId, ms, msVal, mphVal);
+    if (pr.ms)  prsEl.innerHTML += '<span class="pr-tag ms">PR m/s ⚡</span>';
+    if (pr.mph) prsEl.innerHTML += '<span class="pr-tag m">PR MPH 🔥</span>';
+  }
 
-  // Tiers
-  renderTiers(ms);
-
-  // Slide to results
   $track.classList.add('show-results');
   vibrate([60]);
 }
 
-// RESET — slide back to timer
+function renderResults(timeMs) {
+  const numbersEl = document.getElementById('res-numbers');
+  const extraEl   = document.getElementById('res-extra');
+  const buTagEl   = document.getElementById('res-buildup-tag');
+
+  if (currentMode === '10m') {
+    const speed = calc10mMph(timeMs);
+    numbersEl.innerHTML = `
+      <div class="res-chip">
+        <div class="res-chip-lbl">Time</div>
+        <div class="res-chip-val t">${fmt(timeMs)}</div>
+        <div class="res-chip-unit">seconds</div>
+      </div>
+      <div class="res-chip">
+        <div class="res-chip-lbl">Top Speed</div>
+        <div class="res-chip-val m">${speed}</div>
+        <div class="res-chip-unit">mph</div>
+      </div>`;
+    extraEl.style.display = 'none';
+    buTagEl.textContent = '';
+    renderTiers10m(timeMs);
+  } else {
+    const msVal  = calc30mMs(timeMs);
+    const mphVal = calc30mMph(timeMs);
+    const kmhVal = calc30mKmh(timeMs);
+    numbersEl.innerHTML = `
+      <div class="res-chip">
+        <div class="res-chip-lbl">Time</div>
+        <div class="res-chip-val t">${fmt(timeMs)}</div>
+        <div class="res-chip-unit">seconds</div>
+      </div>
+      <div class="res-chip">
+        <div class="res-chip-lbl">Max Velocity</div>
+        <div class="res-chip-val ms">${msVal}</div>
+        <div class="res-chip-unit">m/s</div>
+      </div>`;
+    extraEl.style.display = 'flex';
+    extraEl.innerHTML = `
+      <div class="res-extra-chip">
+        <div class="res-extra-lbl">mph</div>
+        <div class="res-extra-val">${mphVal}</div>
+      </div>
+      <div class="res-extra-chip">
+        <div class="res-extra-lbl">km/h</div>
+        <div class="res-extra-val">${kmhVal}</div>
+      </div>
+      <div class="res-extra-chip">
+        <div class="res-extra-lbl">Build-up</div>
+        <div class="res-extra-val">${currentBuildUp}m</div>
+      </div>`;
+    buTagEl.textContent = '';
+    renderTiers30m(parseFloat(msVal));
+  }
+}
+
 function doReset() {
   state = 'idle'; ms = 0;
   cancelAnimationFrame(raf);
-
   $track.classList.remove('show-results');
-
-  // Small delay so slide completes before resetting visuals
   setTimeout(() => {
     $clock.textContent    = '0.000';
     $clock.className      = 'clock';
@@ -740,53 +974,73 @@ function doReset() {
   }, 300);
 }
 
-// SAVE
 function doSave() {
-  // Auto-create Unknown N if nobody is selected
   if (!activeId) {
     const unknown = createAthlete(nextUnknownName());
     activeId = unknown.id;
     renderQueue();
   }
 
-  const name  = nameOf(activeId);
-  const speed = parseFloat(mph(ms));
-  const pr    = checkPR(activeId, ms, speed);
-
-  const entry = {
-    id: Date.now(), athleteId: activeId, name,
-    timeMs: ms, mph: speed.toFixed(2),
-    isPrTime: pr.time, isPrMph: pr.mph,
-    timestamp: new Date().toISOString()
-  };
-  history.unshift(entry);
-
+  const name = nameOf(activeId);
   const a = roster.find(r => r.id === activeId);
-  if (a) {
-    if (!a.prTime || ms < a.prTime)               a.prTime = ms;
-    if (!a.prMph  || speed > parseFloat(a.prMph)) a.prMph  = speed.toFixed(2);
-    if (!a.firstTime) a.firstTime = ms;
-    a.runs = (a.runs || 0) + 1;
+
+  let entry;
+  if (currentMode === '10m') {
+    const speed = parseFloat(calc10mMph(ms));
+    const pr = checkPR10m(activeId, ms, speed);
+    entry = {
+      id: Date.now(), athleteId: activeId, name, mode: '10m',
+      timeMs: ms, mph: speed.toFixed(2),
+      isPrTime: pr.time, isPrMph: pr.mph,
+      timestamp: new Date().toISOString()
+    };
+    if (a) {
+      if (!a.prTime || ms < a.prTime)               a.prTime = ms;
+      if (!a.prMph  || speed > parseFloat(a.prMph)) a.prMph  = speed.toFixed(2);
+      if (!a.firstTime) a.firstTime = ms;
+      a.runs = (a.runs || 0) + 1;
+    }
+    if (pr.time && pr.mph) toast('🏆 PR — Time & MPH!', 'pr');
+    else if (pr.time)      toast('⚡ PR — Best Time!',   'pr');
+    else if (pr.mph)       toast('🔥 PR — Top Speed!',   'pr');
+    else                   toast('Saved ✓');
+  } else {
+    const msVal  = parseFloat(calc30mMs(ms));
+    const mphVal = parseFloat(calc30mMph(ms));
+    const kmhVal = parseFloat(calc30mKmh(ms));
+    const pr = checkPR30m(activeId, ms, msVal, mphVal);
+    entry = {
+      id: Date.now(), athleteId: activeId, name, mode: '30m',
+      timeMs: ms,
+      ms: msVal.toFixed(3), mph: mphVal.toFixed(2), kmh: kmhVal.toFixed(2),
+      buildUp: currentBuildUp,
+      isPrMs: pr.ms, isPrMph: pr.mph,
+      timestamp: new Date().toISOString()
+    };
+    if (a) {
+      if (!a.pr30Ms  || msVal  > parseFloat(a.pr30Ms))  a.pr30Ms  = msVal.toFixed(3);
+      if (!a.pr30Mph || mphVal > parseFloat(a.pr30Mph)) a.pr30Mph = mphVal.toFixed(2);
+      if (!a.first30Time) a.first30Time = ms;
+      a.runs30 = (a.runs30 || 0) + 1;
+    }
+    if (pr.ms && pr.mph) toast('🏆 PR — m/s & MPH!', 'm30');
+    else if (pr.ms)      toast('⚡ PR — Best m/s!',   'm30');
+    else if (pr.mph)     toast('🔥 PR — Top Speed!',  'm30');
+    else                 toast('Saved ✓');
   }
+
+  history.unshift(entry);
   persist();
 
-  // Mark chip done, advance queue
   const chip = document.querySelector(`.qchip[data-id="${activeId}"]`);
   if (chip) { chip.classList.remove('on'); chip.classList.add('done'); }
   advanceQueue();
-
-  if (pr.time && pr.mph) toast('🏆 PR — Time & MPH!', true);
-  else if (pr.time)      toast('⚡ PR — Best Time!',   true);
-  else if (pr.mph)       toast('🔥 PR — Top Speed!',   true);
-  else                   toast('Saved ✓');
-
   vibrate([40, 30, 80]);
   doReset();
 }
 
-// Button wiring
 $mainBtn.addEventListener('click', () => {
-  if (state === 'idle')    doStart();
+  if (state === 'idle')         doStart();
   else if (state === 'running') doStop();
 });
 document.getElementById('res-reset-btn').addEventListener('click', doReset);
@@ -795,7 +1049,7 @@ document.getElementById('res-save-btn').addEventListener('click',  doSave);
 // ══════════════════════════════════════
 //  PR CHECK
 // ══════════════════════════════════════
-function checkPR(id, timeMs, speed) {
+function checkPR10m(id, timeMs, speed) {
   if (!id) return { time: false, mph: false };
   const a = roster.find(r => r.id === id);
   if (!a) return { time: false, mph: false };
@@ -806,10 +1060,21 @@ function checkPR(id, timeMs, speed) {
   };
 }
 
+function checkPR30m(id, timeMs, msVal, mphVal) {
+  if (!id) return { ms: false, mph: false };
+  const a = roster.find(r => r.id === id);
+  if (!a) return { ms: false, mph: false };
+  if (!a.pr30Ms && !a.pr30Mph) return { ms: true, mph: true };
+  return {
+    ms:  a.pr30Ms  ? msVal  > parseFloat(a.pr30Ms)  : true,
+    mph: a.pr30Mph ? mphVal > parseFloat(a.pr30Mph) : true
+  };
+}
+
 // ══════════════════════════════════════
-//  BENCHMARKS
+//  TIERS — 10m (time-based, original)
 // ══════════════════════════════════════
-const TIERS = [
+const TIERS_10M = [
   { name:'Elite',      range:'< 1.00s  ·  22+ mph',        min:0,    max:1.00, color:'#FFD700', bg:'rgba(255,215,0,0.10)',   sparkle:true  },
   { name:'Target',     range:'1.00 – 1.25s  ·  18–22 mph', min:1.00, max:1.26, color:'#00cfff', bg:'rgba(0,207,255,0.08)',   sparkle:false },
   { name:'Emerging',   range:'1.26 – 1.35s  ·  16–18 mph', min:1.26, max:1.36, color:'#00ff88', bg:'rgba(0,255,136,0.08)',   sparkle:false },
@@ -817,30 +1082,79 @@ const TIERS = [
   { name:'Beginner',   range:'1.55s or slower',             min:1.55, max:9.99, color:'#666666', bg:'rgba(100,100,100,0.06)', sparkle:false },
 ];
 
-function renderTiers(timeMs) {
+function renderTiers10m(timeMs) {
   const secs = timeMs / 1000;
   const el   = document.getElementById('res-tiers');
-  const tier = TIERS.find(t => secs >= t.min && secs < t.max) || TIERS[TIERS.length - 1];
+  const tier = TIERS_10M.find(t => secs >= t.min && secs < t.max) || TIERS_10M[TIERS_10M.length - 1];
+  el.innerHTML = '<div class="tier-lbl">Speed Tier</div>' + TIERS_10M.map(t => buildTierRow(t, t === tier)).join('');
+}
 
-  el.innerHTML = '<div class="tier-lbl">Speed Tier</div>' +
-    TIERS.map(t => {
-      const active  = t === tier;
-      const isElite = active && t.sparkle;
-      const rowCls  = 'tier-row' + (active ? (isElite ? ' active elite-active' : ' active') : '');
-      const rowStyle = active && !isElite ? `border-color:${t.color}; background:${t.bg};` : '';
-      const nameCls  = 'tier-name' + (isElite ? ' sparkle' : '');
-      const nameStyle = isElite ? '' : `color:${active ? t.color : 'var(--muted)'}`;
-      const youCls   = 'tier-you' + (isElite ? ' sparkle' : '');
-      const youStyle  = isElite ? '' : `background:${t.color}; color:#000`;
-      return `<div class="${rowCls}" style="${rowStyle}">
-        <div class="tier-dot" style="background:${t.color}"></div>
-        <div class="tier-info">
-          <div class="${nameCls}" style="${nameStyle}">${t.name}</div>
-          <div class="tier-range">${t.range}</div>
-        </div>
-        ${active ? `<div class="${youCls}" style="${youStyle}">◀ YOU</div>` : ''}
-      </div>`;
-    }).join('');
+// ══════════════════════════════════════
+//  TIERS — 30m (m/s based, gender-aware)
+// ══════════════════════════════════════
+const TIERS_30M_BOYS = [
+  { name:'National Level',      range:'> 10.0 m/s  ·  > 22.4 mph',      minMs:10.0, color:'#FFD700', bg:'rgba(255,215,0,0.10)',   sparkle:true  },
+  { name:'Elite Prep',          range:'9.5 – 10.0 m/s  ·  21.3–22.4 mph', minMs:9.5,  maxMs:10.0, color:'#00cfff', bg:'rgba(0,207,255,0.08)',   sparkle:false },
+  { name:'Varsity Competitive', range:'8.5 – 9.5 m/s  ·  19.0–21.3 mph', minMs:8.5,  maxMs:9.5,  color:'#00ff88', bg:'rgba(0,255,136,0.08)',   sparkle:false },
+  { name:'JV Competitive',      range:'7.5 – 8.5 m/s  ·  16.8–19.0 mph', minMs:7.5,  maxMs:8.5,  color:'#e8ff00', bg:'rgba(232,255,0,0.08)',   sparkle:false },
+  { name:'Developmental',       range:'< 7.5 m/s  ·  < 16.8 mph',        maxMs:7.5,  color:'#666666', bg:'rgba(100,100,100,0.06)', sparkle:false },
+];
+
+const TIERS_30M_GIRLS = [
+  { name:'National Level',      range:'> 9.2 m/s  ·  > 20.6 mph',        minMs:9.2,  color:'#FFD700', bg:'rgba(255,215,0,0.10)',   sparkle:true  },
+  { name:'Elite Prep',          range:'8.5 – 9.2 m/s  ·  19.0–20.6 mph', minMs:8.5,  maxMs:9.2,  color:'#00cfff', bg:'rgba(0,207,255,0.08)',   sparkle:false },
+  { name:'Varsity Competitive', range:'7.6 – 8.5 m/s  ·  17.0–19.0 mph', minMs:7.6,  maxMs:8.5,  color:'#00ff88', bg:'rgba(0,255,136,0.08)',   sparkle:false },
+  { name:'JV Competitive',      range:'6.8 – 7.6 m/s  ·  15.2–17.0 mph', minMs:6.8,  maxMs:7.6,  color:'#e8ff00', bg:'rgba(232,255,0,0.08)',   sparkle:false },
+  { name:'Developmental',       range:'< 6.8 m/s  ·  < 15.2 mph',        maxMs:6.8,  color:'#666666', bg:'rgba(100,100,100,0.06)', sparkle:false },
+];
+
+let tierGender = 'boys'; // default; toggle on results panel
+
+function renderTiers30m(msVal) {
+  const el     = document.getElementById('res-tiers');
+  const tiers  = tierGender === 'boys' ? TIERS_30M_BOYS : TIERS_30M_GIRLS;
+
+  // Find active tier
+  let activeTier = tiers[tiers.length - 1]; // default developmental
+  for (const t of tiers) {
+    if (t.minMs !== undefined && t.maxMs !== undefined) {
+      if (msVal >= t.minMs && msVal < t.maxMs) { activeTier = t; break; }
+    } else if (t.minMs !== undefined && t.maxMs === undefined) {
+      if (msVal >= t.minMs) { activeTier = t; break; }
+    } else if (t.maxMs !== undefined && t.minMs === undefined) {
+      if (msVal < t.maxMs) { activeTier = t; break; }
+    }
+  }
+
+  const genderToggle = `
+    <div style="display:flex;gap:6px;margin-bottom:10px;">
+      <button class="bu-chip${tierGender==='boys'?' on':''}" id="tg-boys" style="font-size:10px;padding:5px 12px">Boys</button>
+      <button class="bu-chip${tierGender==='girls'?' on':''}" id="tg-girls" style="font-size:10px;padding:5px 12px">Girls</button>
+    </div>`;
+
+  el.innerHTML = '<div class="tier-lbl">Speed Tier</div>' + genderToggle +
+    tiers.map(t => buildTierRow(t, t === activeTier)).join('');
+
+  document.getElementById('tg-boys').addEventListener('click', () => { tierGender='boys'; renderTiers30m(msVal); });
+  document.getElementById('tg-girls').addEventListener('click', () => { tierGender='girls'; renderTiers30m(msVal); });
+}
+
+function buildTierRow(t, active) {
+  const isElite  = active && t.sparkle;
+  const rowCls   = 'tier-row' + (active ? (isElite ? ' active elite-active' : ' active') : '');
+  const rowStyle  = active && !isElite ? `border-color:${t.color}; background:${t.bg};` : '';
+  const nameCls   = 'tier-name' + (isElite ? ' sparkle' : '');
+  const nameStyle = isElite ? '' : `color:${active ? t.color : 'var(--muted)'}`;
+  const youCls    = 'tier-you' + (isElite ? ' sparkle' : '');
+  const youStyle  = isElite ? '' : `background:${t.color}; color:#000`;
+  return `<div class="${rowCls}" style="${rowStyle}">
+    <div class="tier-dot" style="background:${t.color}"></div>
+    <div class="tier-info">
+      <div class="${nameCls}" style="${nameStyle}">${t.name}</div>
+      <div class="tier-range">${t.range}</div>
+    </div>
+    ${active ? `<div class="${youCls}" style="${youStyle}">◀ YOU</div>` : ''}
+  </div>`;
 }
 
 // ══════════════════════════════════════
@@ -853,12 +1167,13 @@ function nameOf(id) {
 
 function renderQueue() {
   const strip = document.getElementById('q-strip');
+  const is30  = currentMode === '30m';
   if (!roster.length) {
     strip.innerHTML = '<div class="q-none">No athletes — add below or in Roster tab</div>';
     return;
   }
   strip.innerHTML = roster.map(a => {
-    const cls = a.id === activeId ? 'qchip on' : 'qchip';
+    const cls = 'qchip' + (a.id === activeId ? (is30 ? ' on m30' : ' on') : '');
     return `<div class="${cls}" data-id="${a.id}">${esc(a.name)}</div>`;
   }).join('');
   strip.querySelectorAll('.qchip').forEach(c => {
@@ -880,23 +1195,27 @@ function advanceQueue() {
   renderQueue();
 }
 
-// ── next available "Unknown N" label ──
 function nextUnknownName() {
   let n = 1;
   while (roster.find(r => r.name === 'Unknown ' + n)) n++;
   return 'Unknown ' + n;
 }
 
-// ── core create (no dupe check) ──
 function createAthlete(name) {
-  const a = { id: Date.now(), name, prTime: null, prMph: null, firstTime: null, runs: 0 };
+  const a = {
+    id: Date.now(), name,
+    prTime: null, prMph: null, firstTime: null, runs: 0,       // 10m
+    pr30Ms: null, pr30Mph: null, first30Time: null, runs30: 0  // 30m
+  };
   roster.push(a);
   persist(); renderQueue(); renderRoster();
   return a;
 }
 
-// ── duplicate resolution state ──
-let _dupPending = null; // { newName, existingId }
+// ══════════════════════════════════════
+//  DUPLICATE MODAL
+// ══════════════════════════════════════
+let _dupPending = null;
 
 function showDupModal(newName, existingId) {
   const ex = roster.find(r => r.id === existingId);
@@ -920,14 +1239,22 @@ document.getElementById('dup-merge').addEventListener('click', () => {
   const { existingId } = _dupPending;
   const ex = roster.find(r => r.id === existingId);
   if (ex) {
-    // Re-derive PRs from history after merge (history already shares athleteId)
-    const runs = history.filter(e => e.athleteId === existingId);
-    if (runs.length) {
-      const bestTime = Math.min(...runs.map(e => e.timeMs));
-      const bestMph  = Math.max(...runs.map(e => parseFloat(e.mph)));
+    const runs10 = history.filter(e => e.athleteId === existingId && (!e.mode || e.mode === '10m'));
+    if (runs10.length) {
+      const bestTime = Math.min(...runs10.map(e => e.timeMs));
+      const bestMph  = Math.max(...runs10.map(e => parseFloat(e.mph)));
       if (!ex.prTime || bestTime < ex.prTime) ex.prTime = bestTime;
       if (!ex.prMph  || bestMph  > parseFloat(ex.prMph || 0)) ex.prMph = bestMph.toFixed(2);
-      if (!ex.firstTime) ex.firstTime = runs[runs.length - 1].timeMs;
+      if (!ex.firstTime) ex.firstTime = runs10[runs10.length - 1].timeMs;
+      ex.runs = runs10.length;
+    }
+    const runs30 = history.filter(e => e.athleteId === existingId && e.mode === '30m');
+    if (runs30.length) {
+      const bestMs  = Math.max(...runs30.map(e => parseFloat(e.ms)));
+      const bestMph = Math.max(...runs30.map(e => parseFloat(e.mph)));
+      if (!ex.pr30Ms  || bestMs  > parseFloat(ex.pr30Ms  || 0)) ex.pr30Ms  = bestMs.toFixed(3);
+      if (!ex.pr30Mph || bestMph > parseFloat(ex.pr30Mph || 0)) ex.pr30Mph = bestMph.toFixed(2);
+      ex.runs30 = runs30.length;
     }
     persist(); renderQueue(); renderRoster();
   }
@@ -939,7 +1266,6 @@ document.getElementById('dup-overwrite').addEventListener('click', () => {
   if (!_dupPending) return;
   const { newName, existingId } = _dupPending;
   roster = roster.filter(r => r.id !== existingId);
-  // reassign history entries
   history.forEach(e => { if (e.athleteId === existingId) e.athleteId = null; });
   createAthlete(newName);
   hideDupModal();
@@ -969,8 +1295,7 @@ function startEdit(id) {
     `</div>`;
   const inp = card.querySelector('.r-name-input');
   inp.focus(); inp.select();
-
-  card.querySelector('.r-name-save').addEventListener('click', () => commitEdit(id, inp.value));
+  card.querySelector('.r-name-save').addEventListener('click',   () => commitEdit(id, inp.value));
   card.querySelector('.r-name-cancel').addEventListener('click', () => renderRoster());
   inp.addEventListener('keydown', e => {
     if (e.key === 'Enter')  commitEdit(id, inp.value);
@@ -985,30 +1310,31 @@ function commitEdit(id, rawName) {
   if (!a) return;
   if (name === a.name) { renderRoster(); return; }
 
-  // Check for duplicate (excluding self)
   const dup = roster.find(r => r.id !== id && r.name.toLowerCase() === name.toLowerCase());
   if (dup) {
-    // Offer merge: move this athlete's runs to dup, delete this one
     _dupPending = { newName: name, existingId: dup.id, sourceId: id };
     document.getElementById('dup-body').innerHTML =
       `<strong>${esc(name)}</strong> already exists.<br><br>` +
       `<strong>Merge</strong> — move all of <strong>${esc(a.name)}</strong>'s runs into <strong>${esc(dup.name)}</strong> and remove this entry.<br>` +
       `<strong>Overwrite</strong> — rename this entry and delete ${esc(dup.name)}.`;
 
-    // Override merge/overwrite for rename context
     const mergeBtn = document.getElementById('dup-merge');
     const overBtn  = document.getElementById('dup-overwrite');
 
     const mergeHandler = () => {
-      // Move runs from sourceId → existingId
       history.forEach(e => { if (e.athleteId === id) { e.athleteId = dup.id; e.name = dup.name; } });
-      // Recalc dup PRs
-      const runs = history.filter(e => e.athleteId === dup.id);
-      if (runs.length) {
-        dup.prTime = Math.min(...runs.map(e => e.timeMs));
-        dup.prMph  = Math.max(...runs.map(e => parseFloat(e.mph))).toFixed(2);
-        if (!dup.firstTime) dup.firstTime = runs[runs.length - 1].timeMs;
-        dup.runs   = runs.length;
+      const runs10 = history.filter(e => e.athleteId === dup.id && (!e.mode || e.mode === '10m'));
+      if (runs10.length) {
+        dup.prTime = Math.min(...runs10.map(e => e.timeMs));
+        dup.prMph  = Math.max(...runs10.map(e => parseFloat(e.mph))).toFixed(2);
+        if (!dup.firstTime) dup.firstTime = runs10[runs10.length - 1].timeMs;
+        dup.runs = runs10.length;
+      }
+      const runs30 = history.filter(e => e.athleteId === dup.id && e.mode === '30m');
+      if (runs30.length) {
+        dup.pr30Ms  = Math.max(...runs30.map(e => parseFloat(e.ms))).toFixed(3);
+        dup.pr30Mph = Math.max(...runs30.map(e => parseFloat(e.mph))).toFixed(2);
+        dup.runs30  = runs30.length;
       }
       roster = roster.filter(r => r.id !== id);
       if (activeId === id) activeId = dup.id;
@@ -1018,7 +1344,6 @@ function commitEdit(id, rawName) {
       overBtn.removeEventListener('click',  overHandler);
     };
     const overHandler = () => {
-      // Rename this, delete dup
       a.name = name;
       history.forEach(e => { if (e.athleteId === dup.id) e.athleteId = null; });
       roster = roster.filter(r => r.id !== dup.id);
@@ -1035,7 +1360,6 @@ function commitEdit(id, rawName) {
     return;
   }
 
-  // Simple rename — update roster + history entries
   a.name = name;
   history.forEach(e => { if (e.athleteId === id) e.name = name; });
   persist(); renderQueue(); renderRoster();
@@ -1071,37 +1395,66 @@ function removeAthlete(id) {
 // ══════════════════════════════════════
 function renderRoster() {
   const el = document.getElementById('r-list');
+  const is30 = currentMode === '30m';
+
+  // Key box — shared, shows both distance types always
   const keyBox = `<div class="r-key">
     <div class="r-key-title">Key</div>
-    <div class="r-key-row"><span class="r-key-pill t">⚡</span><span class="r-key-meaning">= Best Time (seconds)</span></div>
-    <div class="r-key-row"><span class="r-key-pill m">🔥</span><span class="r-key-meaning">= Top Speed (mph)</span></div>
-    <div class="r-key-row"><span class="r-key-pill f">🚀</span><span class="r-key-meaning">= First Run (seconds)</span></div>
+    <div class="r-key-row"><span class="r-key-pill t">⚡</span><span class="r-key-meaning">Best Time PR (seconds)</span></div>
+    <div class="r-key-row"><span class="r-key-pill m">🔥</span><span class="r-key-meaning">Top Speed PR (mph)</span></div>
+    <div class="r-key-row"><span class="r-key-pill f">🚀</span><span class="r-key-meaning">First Run (seconds)</span></div>
   </div>`;
+
   if (!roster.length) { el.innerHTML = keyBox + '<div class="r-empty">No athletes yet — add above</div>'; return; }
-  el.innerHTML = roster.map(a => {
-    const runs  = a.runs || 0;
-    const pills = [];
-    if (a.prTime)    pills.push(`<span class="r-pill t">⚡ ${fmt(a.prTime)}s</span>`);
-    if (a.prMph)     pills.push(`<span class="r-pill m">🔥 ${a.prMph} mph</span>`);
-    if (a.firstTime) pills.push(`<span class="r-pill f">🚀 ${fmt(a.firstTime)}s</span>`);
-    if (!a.prTime && !a.prMph && !a.firstTime) pills.push('<span class="r-pill n">No runs yet</span>');
-    const runLabel = runs > 0 ? `${runs} Run${runs !== 1 ? 's' : ''}` : '';
-    return `<div class="r-card" data-id="${a.id}">
-      <div style="flex:1;min-width:0">
-        <div class="r-name-wrap">
-          <div class="r-name">${esc(a.name)}${runLabel ? `<span class="r-runcount"> — ${runLabel}</span>` : ''}</div>
-          <button class="r-edit-btn" data-id="${a.id}" title="Rename">✎</button>
+
+  if (is30) {
+    // 30m module: show only 30m PRs, single row of pills, centered
+    el.innerHTML = keyBox + roster.map(a => {
+      const runs30 = a.runs30 || 0;
+      const pills = [];
+      if (a.pr30Ms)       pills.push(`<span class="r-pill t">⚡ ${a.pr30Ms} m/s PR</span>`);
+      if (a.pr30Mph)      pills.push(`<span class="r-pill m">🔥 ${a.pr30Mph} mph PR</span>`);
+      if (a.first30Time)  pills.push(`<span class="r-pill f">🚀 ${fmt(a.first30Time)}s 1st</span>`);
+      if (!a.pr30Ms && !a.pr30Mph) pills.push('<span class="r-pill n">No 30m runs yet</span>');
+      const runLabel = runs30 > 0 ? `${runs30} Run${runs30 !== 1 ? 's' : ''}` : '';
+      return `<div class="r-card" data-id="${a.id}" style="border-color:rgba(191,95,255,.2)">
+        <div style="flex:1;min-width:0">
+          <div class="r-name-wrap">
+            <div class="r-name">${esc(a.name)}${runLabel ? `<span class="r-runcount"> — ${runLabel}</span>` : ''}</div>
+            <button class="r-edit-btn" data-id="${a.id}" title="Rename">✎</button>
+          </div>
+          <div class="r-prs">${pills.join('')}</div>
         </div>
-        <div class="r-prs">${pills.join('')}</div>
-      </div>
-      <button class="r-del" data-id="${a.id}">✕</button>
-    </div>`;
-  }).join('');
-  el.innerHTML = keyBox + el.innerHTML;
+        <button class="r-del" data-id="${a.id}">✕</button>
+      </div>`;
+    }).join('');
+  } else {
+    // 10m module: show only 10m PRs, single row of pills, centered
+    el.innerHTML = keyBox + roster.map(a => {
+      const runs10 = a.runs || 0;
+      const pills = [];
+      if (a.prTime)    pills.push(`<span class="r-pill t">⚡ ${fmt(a.prTime)}s PR</span>`);
+      if (a.prMph)     pills.push(`<span class="r-pill m">🔥 ${a.prMph} mph PR</span>`);
+      if (a.firstTime) pills.push(`<span class="r-pill f">🚀 ${fmt(a.firstTime)}s 1st</span>`);
+      if (!a.prTime && !a.prMph) pills.push('<span class="r-pill n">No runs yet</span>');
+      const runLabel = runs10 > 0 ? `${runs10} Run${runs10 !== 1 ? 's' : ''}` : '';
+      return `<div class="r-card" data-id="${a.id}" style="border-color:rgba(0,255,170,.2)">
+        <div style="flex:1;min-width:0">
+          <div class="r-name-wrap">
+            <div class="r-name">${esc(a.name)}${runLabel ? `<span class="r-runcount"> — ${runLabel}</span>` : ''}</div>
+            <button class="r-edit-btn" data-id="${a.id}" title="Rename">✎</button>
+          </div>
+          <div class="r-prs">${pills.join('')}</div>
+        </div>
+        <button class="r-del" data-id="${a.id}">✕</button>
+      </div>`;
+    }).join('');
+  }
+
   el.querySelectorAll('.r-card').forEach(card => {
     card.addEventListener('click', e => {
-      if (e.target.closest('.r-del'))      return;
-      if (e.target.closest('.r-edit-btn')) return;
+      if (e.target.closest('.r-del'))        return;
+      if (e.target.closest('.r-edit-btn'))   return;
       if (e.target.closest('.r-name-input')) return;
       openDrawer(parseInt(card.dataset.id));
     });
@@ -1120,6 +1473,7 @@ function renderRoster() {
 function openDrawer(id) {
   _drawerAthleteId  = id;
   _drawerSelectedId = null;
+  _drawerTab        = '10m';
   renderDrawer(id);
   document.getElementById('drawer-overlay').classList.add('on');
   document.getElementById('drawer').classList.add('on');
@@ -1129,31 +1483,61 @@ function renderDrawer(id) {
   const a = roster.find(r => r.id === id);
   if (!a) return;
 
-  // Header name
   document.getElementById('drawer-name').textContent = a.name;
 
-  // PR pills
+  // Two-column PR summary at top of drawer
   const prsEl = document.getElementById('drawer-prs');
-  const pills = [];
-  if (a.prTime) pills.push(`<span class="r-pill t">⚡ ${fmt(a.prTime)}s</span>`);
-  if (a.prMph)  pills.push(`<span class="r-pill m">🔥 ${a.prMph} mph</span>`);
-  if (!a.prTime && !a.prMph) pills.push('<span class="r-pill n">No runs yet</span>');
-  prsEl.innerHTML = pills.join('');
+  const col10pills = [];
+  if (a.prTime)    col10pills.push(`<span class="r-pill t">⚡ ${fmt(a.prTime)}s PR</span>`);
+  if (a.prMph)     col10pills.push(`<span class="r-pill m">🔥 ${a.prMph} mph PR</span>`);
+  if (a.firstTime) col10pills.push(`<span class="r-pill f">🚀 ${fmt(a.firstTime)}s 1st</span>`);
+  const col30pills = [];
+  if (a.pr30Ms)       col30pills.push(`<span class="r-pill t">⚡ ${a.pr30Ms} m/s PR</span>`);
+  if (a.pr30Mph)      col30pills.push(`<span class="r-pill m">🔥 ${a.pr30Mph} mph PR</span>`);
+  if (a.first30Time)  col30pills.push(`<span class="r-pill f">🚀 ${fmt(a.first30Time)}s 1st</span>`);
+  prsEl.innerHTML = `
+    <div class="pr-cols">
+      <div class="pr-col pr-col-10">
+        <div class="pr-col-lbl">10m Fly</div>
+        <div class="pr-pills">${col10pills.length ? col10pills.join('') : '<span class="pr-col-none">No runs yet</span>'}</div>
+      </div>
+      <div class="pr-col pr-col-30">
+        <div class="pr-col-lbl">30m Fly</div>
+        <div class="pr-pills">${col30pills.length ? col30pills.join('') : '<span class="pr-col-none">No runs yet</span>'}</div>
+      </div>
+    </div>`;
 
-  // Last 10 runs
-  const runs = history.filter(e => e.athleteId === id).slice(0, 10);
+  // Drawer tabs
+  const tabsEl = document.getElementById('drawer-tabs');
+  tabsEl.querySelectorAll('.drawer-tab').forEach(t => {
+    t.classList.toggle('on', t.dataset.dtab === _drawerTab);
+  });
+
+  // Runs for current tab
+  const filterMode = _drawerTab === '10m' ? (e => !e.mode || e.mode === '10m') : (e => e.mode === '30m');
+  const runs = history.filter(e => e.athleteId === id && filterMode(e)).slice(0, 10);
   const runsEl = document.getElementById('drawer-runs');
 
   if (!runs.length) {
-    runsEl.innerHTML = '<div class="drawer-empty">No runs logged yet</div>';
+    runsEl.innerHTML = `<div class="drawer-empty">No ${_drawerTab} runs logged yet</div>`;
     return;
   }
 
   runsEl.innerHTML = runs.map((e, i) => {
     const isSelected = e.id === _drawerSelectedId;
     const tags = [];
-    if (e.isPrTime) tags.push('<span class="drun-pr t">⚡ PR TIME</span>');
-    if (e.isPrMph)  tags.push('<span class="drun-pr m">🔥 PR MPH</span>');
+    if (_drawerTab === '10m') {
+      if (e.isPrTime) tags.push('<span class="drun-pr t">⚡ PR TIME</span>');
+      if (e.isPrMph)  tags.push('<span class="drun-pr m">🔥 PR MPH</span>');
+    } else {
+      if (e.isPrMs)  tags.push('<span class="drun-pr ms">⚡ PR m/s</span>');
+      if (e.isPrMph) tags.push('<span class="drun-pr m">🔥 PR MPH</span>');
+    }
+
+    const timeDisp = _drawerTab === '10m'
+      ? `<div class="drun-time">${fmt(e.timeMs)}s</div><div class="drun-mph">${e.mph} mph</div>`
+      : `<div class="drun-time m30">${fmt(e.timeMs)}s</div><div class="drun-ms">${e.ms} m/s</div><div class="drun-mph">${e.mph} mph</div>`;
+    const buLine = (_drawerTab === '30m' && e.buildUp) ? `<div class="drun-bu">${e.buildUp}m build-up</div>` : '';
 
     const actions = isSelected ? `
       <div class="drun-actions">
@@ -1165,11 +1549,9 @@ function renderDrawer(id) {
       <div style="display:flex;align-items:flex-start;gap:10px">
         <div class="drun-num" style="padding-top:4px">${i + 1}</div>
         <div style="flex:1">
-          <div style="display:flex;align-items:baseline;gap:10px">
-            <div class="drun-time">${fmt(e.timeMs)}s</div>
-            <div class="drun-mph">${e.mph} mph</div>
-          </div>
+          <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">${timeDisp}</div>
           <div class="drun-date">${fmtDate(e.timestamp)}</div>
+          ${buLine}
           ${tags.length ? `<div class="drun-tags">${tags.join('')}</div>` : ''}
           ${actions}
         </div>
@@ -1180,7 +1562,7 @@ function renderDrawer(id) {
   // Wire row taps
   runsEl.querySelectorAll('.drun-row').forEach(row => {
     row.addEventListener('click', e => {
-      if (e.target.closest('.drun-act')) return; // handled below
+      if (e.target.closest('.drun-act')) return;
       const runId = parseInt(row.dataset.run);
       _drawerSelectedId = (_drawerSelectedId === runId) ? null : runId;
       renderDrawer(_drawerAthleteId);
@@ -1195,15 +1577,28 @@ function renderDrawer(id) {
       if (!run) return;
       const athlete = roster.find(r => r.id === id);
       if (!athlete) return;
-      athlete.prTime = run.timeMs;
-      athlete.prMph  = run.mph;
-      const athleteRuns = history.filter(x => x.athleteId === id);
-      const bestTime = Math.min(...athleteRuns.map(x => x.timeMs));
-      const bestMph  = Math.max(...athleteRuns.map(x => parseFloat(x.mph)));
-      athleteRuns.forEach(x => {
-        x.isPrTime = x.timeMs === bestTime;
-        x.isPrMph  = parseFloat(x.mph) === bestMph;
-      });
+
+      if (_drawerTab === '10m') {
+        const athleteRuns = history.filter(x => x.athleteId === id && (!x.mode || x.mode === '10m'));
+        const bestTime = Math.min(...athleteRuns.map(x => x.timeMs));
+        const bestMph  = Math.max(...athleteRuns.map(x => parseFloat(x.mph)));
+        athlete.prTime = run.timeMs;
+        athlete.prMph  = run.mph;
+        athleteRuns.forEach(x => {
+          x.isPrTime = x.timeMs === bestTime;
+          x.isPrMph  = parseFloat(x.mph) === bestMph;
+        });
+      } else {
+        const athleteRuns = history.filter(x => x.athleteId === id && x.mode === '30m');
+        const bestMs  = Math.max(...athleteRuns.map(x => parseFloat(x.ms)));
+        const bestMph = Math.max(...athleteRuns.map(x => parseFloat(x.mph)));
+        athlete.pr30Ms  = run.ms;
+        athlete.pr30Mph = run.mph;
+        athleteRuns.forEach(x => {
+          x.isPrMs  = parseFloat(x.ms)  === bestMs;
+          x.isPrMph = parseFloat(x.mph) === bestMph;
+        });
+      }
       _drawerSelectedId = null;
       persist(); renderRoster(); renderDrawer(id);
       toast('⚡🔥 PR updated');
@@ -1213,22 +1608,29 @@ function renderDrawer(id) {
   runsEl.querySelectorAll('.drun-act.del-run').forEach(btn => {
     btn.addEventListener('click', e => {
       e.stopPropagation();
-      const runId  = parseInt(btn.dataset.run);
-      const run    = history.find(x => x.id === runId);
-      const label  = run ? fmt(run.timeMs) + 's' : 'this run';
+      const runId = parseInt(btn.dataset.run);
+      const run   = history.find(x => x.id === runId);
+      const label = run ? fmt(run.timeMs) + 's' : 'this run';
       if (!confirm('Delete ' + label + ' from ' + a.name + '?')) return;
       history = history.filter(x => x.id !== runId);
-      // Recalc athlete PRs from remaining runs
-      const remaining = history.filter(x => x.athleteId === id);
-      if (remaining.length) {
-        const bestTime = Math.min(...remaining.map(x => x.timeMs));
-        const bestMph  = Math.max(...remaining.map(x => parseFloat(x.mph)));
-        a.prTime = bestTime;
-        a.prMph  = bestMph.toFixed(2);
-        a.firstTime = remaining[remaining.length - 1].timeMs;
-        a.runs   = remaining.length;
+
+      // Recalc PRs
+      if (_drawerTab === '10m') {
+        const remaining = history.filter(x => x.athleteId === id && (!x.mode || x.mode === '10m'));
+        if (remaining.length) {
+          a.prTime    = Math.min(...remaining.map(x => x.timeMs));
+          a.prMph     = Math.max(...remaining.map(x => parseFloat(x.mph))).toFixed(2);
+          a.firstTime = remaining[remaining.length - 1].timeMs;
+          a.runs      = remaining.length;
+        } else { a.prTime = null; a.prMph = null; a.firstTime = null; a.runs = 0; }
       } else {
-        a.prTime = null; a.prMph = null; a.firstTime = null; a.runs = 0;
+        const remaining = history.filter(x => x.athleteId === id && x.mode === '30m');
+        if (remaining.length) {
+          a.pr30Ms      = Math.max(...remaining.map(x => parseFloat(x.ms))).toFixed(3);
+          a.pr30Mph     = Math.max(...remaining.map(x => parseFloat(x.mph))).toFixed(2);
+          a.first30Time = remaining[remaining.length - 1].timeMs;
+          a.runs30      = remaining.length;
+        } else { a.pr30Ms = null; a.pr30Mph = null; a.first30Time = null; a.runs30 = 0; }
       }
       _drawerSelectedId = null;
       persist(); renderRoster(); renderDrawer(id); updateStats();
@@ -1236,6 +1638,15 @@ function renderDrawer(id) {
     });
   });
 }
+
+// Drawer tab wiring
+document.getElementById('drawer-tabs').querySelectorAll('.drawer-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    _drawerTab = btn.dataset.dtab;
+    _drawerSelectedId = null;
+    renderDrawer(_drawerAthleteId);
+  });
+});
 
 function closeDrawer() {
   document.getElementById('drawer-overlay').classList.remove('on');
@@ -1257,20 +1668,32 @@ function renderLog() {
     updateStats(); return;
   }
   el.innerHTML = history.map(e => {
-    const both = e.isPrTime && e.isPrMph;
-    const cls  = both ? 'l-card pb' : e.isPrTime ? 'l-card pt' : e.isPrMph ? 'l-card pm' : 'l-card';
+    const is30 = e.mode === '30m';
+    let cls = 'l-card';
+    if (is30 && (e.isPrMs || e.isPrMph)) cls += ' p30';
+    else if (!is30 && e.isPrTime && e.isPrMph) cls += ' pb';
+    else if (!is30 && e.isPrTime) cls += ' pt';
+    else if (!is30 && e.isPrMph)  cls += ' pm';
+
+    const rightCol = is30
+      ? `<div class="l-time m30">${fmt(e.timeMs)}s</div><div class="l-ms">${e.ms} m/s</div><div class="l-mph">${e.mph} mph</div>`
+      : `<div class="l-time">${fmt(e.timeMs)}s</div><div class="l-mph">${e.mph} mph</div>`;
+
+    const typeTag = is30
+      ? `<div class="l-type">30m Fly · ${e.buildUp || '?'}m build-up</div>`
+      : `<div class="l-type">10m Fly</div>`;
+
     return `<div class="${cls}">
       <div>
         <div class="l-name">${esc(e.name)}</div>
         <div class="l-meta">${fmtDate(e.timestamp)}</div>
+        ${typeTag}
       </div>
-      <div>
-        <div class="l-time">${fmt(e.timeMs)}s</div>
-        <div class="l-mph">${e.mph} mph</div>
-      </div>
+      <div>${rightCol}</div>
       <button class="l-del" data-id="${e.id}">✕</button>
     </div>`;
   }).join('');
+
   el.querySelectorAll('.l-del').forEach(b => {
     b.addEventListener('click', () => {
       const entry = history.find(x => x.id === parseInt(b.dataset.id));
@@ -1300,60 +1723,77 @@ document.getElementById('clr-btn').addEventListener('click', () => {
 });
 
 // ══════════════════════════════════════
-//  CSV EXPORT
+//  CSV EXPORT (combined)
 // ══════════════════════════════════════
 function exportCSV() {
   if (!roster.length) { toast('No athletes to export'); return; }
 
   const rows = [];
 
-  // Header row
+  // Header — 10m cols + 30m cols
   rows.push([
     'Athlete',
-    'Runs',
-    'PR Time (s)',
-    'PR MPH',
-    'First Run (s)',
-    'Run 1 (s)', 'Run 1 MPH',
-    'Run 2 (s)', 'Run 2 MPH',
-    'Run 3 (s)', 'Run 3 MPH',
-    'Run 4 (s)', 'Run 4 MPH',
-    'Run 5 (s)', 'Run 5 MPH',
-    'Run 6 (s)', 'Run 6 MPH',
-    'Run 7 (s)', 'Run 7 MPH',
-    'Run 8 (s)', 'Run 8 MPH',
-    'Run 9 (s)', 'Run 9 MPH',
-    'Run 10 (s)', 'Run 10 MPH',
+    // 10m
+    '10m Runs', '10m PR Time (s)', '10m PR MPH', '10m First Run (s)',
+    '10m Run 1 (s)', '10m Run 1 MPH',
+    '10m Run 2 (s)', '10m Run 2 MPH',
+    '10m Run 3 (s)', '10m Run 3 MPH',
+    '10m Run 4 (s)', '10m Run 4 MPH',
+    '10m Run 5 (s)', '10m Run 5 MPH',
+    // 30m
+    '30m Runs', '30m PR m/s', '30m PR MPH',
+    '30m Run 1 (s)', '30m Run 1 m/s', '30m Run 1 MPH', '30m Run 1 Build-up',
+    '30m Run 2 (s)', '30m Run 2 m/s', '30m Run 2 MPH', '30m Run 2 Build-up',
+    '30m Run 3 (s)', '30m Run 3 m/s', '30m Run 3 MPH', '30m Run 3 Build-up',
+    '30m Run 4 (s)', '30m Run 4 m/s', '30m Run 4 MPH', '30m Run 4 Build-up',
+    '30m Run 5 (s)', '30m Run 5 m/s', '30m Run 5 MPH', '30m Run 5 Build-up',
   ].map(csvCell).join(','));
 
   roster.forEach(a => {
-    const athleteRuns = history.filter(e => e.athleteId === a.id).slice(0, 10);
-    const runCols = [];
-    for (let i = 0; i < 10; i++) {
-      if (athleteRuns[i]) {
-        runCols.push(csvCell((athleteRuns[i].timeMs / 1000).toFixed(3)));
-        runCols.push(csvCell(athleteRuns[i].mph));
-      } else {
-        runCols.push(''); runCols.push('');
-      }
+    const runs10 = history.filter(e => e.athleteId === a.id && (!e.mode || e.mode === '10m')).slice(0, 5);
+    const runs30 = history.filter(e => e.athleteId === a.id && e.mode === '30m').slice(0, 5);
+
+    const cols10 = [];
+    for (let i = 0; i < 5; i++) {
+      if (runs10[i]) {
+        cols10.push(csvCell((runs10[i].timeMs / 1000).toFixed(3)));
+        cols10.push(csvCell(runs10[i].mph));
+      } else { cols10.push(''); cols10.push(''); }
     }
+
+    const cols30 = [];
+    for (let i = 0; i < 5; i++) {
+      if (runs30[i]) {
+        cols30.push(csvCell((runs30[i].timeMs / 1000).toFixed(3)));
+        cols30.push(csvCell(runs30[i].ms));
+        cols30.push(csvCell(runs30[i].mph));
+        cols30.push(csvCell(runs30[i].buildUp || ''));
+      } else { cols30.push(''); cols30.push(''); cols30.push(''); cols30.push(''); }
+    }
+
     rows.push([
       csvCell(a.name),
+      // 10m summary
       csvCell(a.runs || 0),
-      csvCell(a.prTime ? (a.prTime / 1000).toFixed(3) : ''),
-      csvCell(a.prMph  || ''),
+      csvCell(a.prTime    ? (a.prTime / 1000).toFixed(3) : ''),
+      csvCell(a.prMph     || ''),
       csvCell(a.firstTime ? (a.firstTime / 1000).toFixed(3) : ''),
-      ...runCols
+      ...cols10,
+      // 30m summary
+      csvCell(a.runs30 || 0),
+      csvCell(a.pr30Ms  || ''),
+      csvCell(a.pr30Mph || ''),
+      ...cols30,
     ].join(','));
   });
 
-  const csv      = rows.join('\n');
-  const blob     = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const url      = URL.createObjectURL(blob);
-  const a        = document.createElement('a');
-  const date     = new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }).replace(/ /g,'-').replace(',','');
-  a.href         = url;
-  a.download     = '10mFly-Roster-' + date + '.csv';
+  const csv  = rows.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const date = new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }).replace(/ /g,'-').replace(',','');
+  a.href     = url;
+  a.download = 'FlyTimer-Roster-' + date + '.csv';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -1371,6 +1811,17 @@ function csvCell(val) {
 document.getElementById('export-btn').addEventListener('click', exportCSV);
 
 // ══════════════════════════════════════
+//  BUILD-UP CHIPS
+// ══════════════════════════════════════
+document.querySelectorAll('.bu-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    currentBuildUp = parseInt(chip.dataset.bu);
+    document.querySelectorAll('.bu-chip').forEach(c => c.classList.remove('on'));
+    chip.classList.add('on');
+  });
+});
+
+// ══════════════════════════════════════
 //  TABS
 // ══════════════════════════════════════
 document.querySelectorAll('.tab').forEach(btn => {
@@ -1380,9 +1831,68 @@ document.querySelectorAll('.tab').forEach(btn => {
     document.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
     document.getElementById(id).classList.add('on');
     btn.classList.add('on');
+    if (currentMode === '30m') btn.classList.add('m30');
     if (id === 'roster-view') renderRoster();
     if (id === 'log-view')    renderLog();
   });
+});
+
+// ══════════════════════════════════════
+//  MODE SWITCH (home → app)
+// ══════════════════════════════════════
+function enterMode(mode) {
+  currentMode = mode;
+  const is30  = mode === '30m';
+
+  // Swap home ↔ shell
+  document.getElementById('home-screen').style.display = 'none';
+  document.getElementById('app-shell').classList.add('on');
+
+  // Branding
+  const titleEl = document.getElementById('app-title');
+  const subEl   = document.getElementById('app-sub');
+  titleEl.textContent = is30 ? '30m FLY' : '10m FLY';
+  titleEl.className   = 'app-title' + (is30 ? ' m30' : '');
+  subEl.textContent   = is30 ? 'Max Velocity Timer' : 'Speed Timer';
+
+  // Save button color
+  document.getElementById('res-save-btn').className = 'btn btn-save' + (is30 ? ' m30' : '');
+
+  // Build-up row
+  document.getElementById('buildup-wrap').style.display = is30 ? 'flex' : 'none';
+
+  // Reset timer state
+  state = 'idle'; ms = 0; activeId = null;
+  cancelAnimationFrame(raf);
+  $clock.textContent    = '0.000';
+  $clock.className      = 'clock';
+  $slbl.textContent     = 'READY';
+  $slbl.className       = 'state-lbl';
+  $clockSub.textContent = 'TAP START WHEN ATHLETE ENTERS ZONE';
+  $mainBtn.textContent  = 'START';
+  $mainBtn.className    = 'btn btn-start';
+  $track.classList.remove('show-results');
+
+  // Roster title tint
+  document.getElementById('r-title-el').textContent = is30 ? '30m Fly · Athlete Roster' : '10m Fly · Athlete Roster';
+  document.getElementById('r-title-el').style.color = is30 ? 'var(--purple)' : 'var(--green)';
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(b => { b.classList.remove('on'); b.classList.remove('m30'); });
+  document.getElementById('timer-view').classList.add('on');
+  document.querySelector('.tab[data-view="timer-view"]').classList.add('on');
+
+  renderQueue();
+  updateStats();
+}
+
+document.getElementById('home-10m').addEventListener('click', () => enterMode('10m'));
+document.getElementById('home-30m').addEventListener('click', () => enterMode('30m'));
+
+document.getElementById('back-btn').addEventListener('click', () => {
+  // Stop timer if running
+  if (state === 'running') { cancelAnimationFrame(raf); state = 'idle'; ms = 0; }
+  document.getElementById('app-shell').classList.remove('on');
+  document.getElementById('home-screen').style.display = 'flex';
 });
 
 // ══════════════════════════════════════
@@ -1397,10 +1907,10 @@ function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
 function vibrate(p) { try { navigator.vibrate && navigator.vibrate(p); } catch(e){} }
 
 let toastTimer;
-function toast(msg, pr) {
+function toast(msg, type) {
   const el = document.getElementById('toast');
   el.textContent = msg;
-  el.className   = 'on' + (pr ? ' pr' : '');
+  el.className   = 'on' + (type === 'pr' ? ' pr' : type === 'm30' ? ' m30' : '');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => { el.className = ''; }, 2400);
 }
@@ -1411,7 +1921,6 @@ function toast(msg, pr) {
 if ('serviceWorker' in navigator)
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 
-renderQueue();
 updateStats();
 </script>
 </body>
