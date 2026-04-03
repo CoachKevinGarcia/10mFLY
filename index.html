@@ -36,24 +36,24 @@
       font-family: 'IBM Plex Mono', monospace;
       overflow: hidden; touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
+      width: 100%;
     }
 
     #app {
       display: flex; flex-direction: column;
       height: 100%; height: 100dvh;
-      max-width: 480px; margin: 0 auto;
-      position: relative; overflow: hidden;
+      width: 100%; overflow: hidden;
+      position: relative;
     }
 
     /* ── HOME SCREEN ── */
     #home-screen {
       display: flex; flex-direction: column;
       height: 100%; height: 100dvh;
-      max-width: 480px; margin: 0 auto;
-      background: var(--bg);
+      width: 100%; background: var(--bg);
     }
     .home-header {
-      padding: 28px 24px 20px;
+      padding: max(28px, env(safe-area-inset-top)) 20px 20px;
       border-bottom: 1px solid var(--border);
       flex-shrink: 0;
     }
@@ -81,31 +81,41 @@
     .home-footer-txt { font-size: 9px; letter-spacing: 2px; color: var(--text); text-transform: uppercase; }
 
     /* ── APP SHELL (timer/roster/log) ── */
-    #app-shell { display:none; flex-direction:column; height:100%; height:100dvh; }
+    #app-shell { display:none; flex-direction:column; height:100%; height:100dvh; width:100%; }
     #app-shell.on { display:flex; }
 
-    /* ── HEADER ── */
+    /* ── HEADER — two rows ── */
     header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 14px 20px 10px; border-bottom: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      padding: 10px 16px 0; border-bottom: 1px solid var(--border);
       flex-shrink: 0; position: relative; z-index: 10;
       background: var(--bg);
     }
-    .header-left { display:flex; align-items:center; gap:12px; }
+    .header-row1 {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .header-left { display:flex; align-items:center; gap:10px; }
     .back-btn {
       background: none; border: 1px solid var(--border); border-radius: 8px;
-      color: var(--text); font-family:'IBM Plex Mono',monospace; font-size:11px;
-      letter-spacing:1px; padding:7px 10px; cursor:pointer; transition:all .15s;
-      text-transform:uppercase; white-space:nowrap;
+      color: var(--text); font-family:'IBM Plex Mono',monospace; font-size:10px;
+      letter-spacing:1px; padding:6px 10px; cursor:pointer; transition:all .15s;
+      text-transform:uppercase; white-space:nowrap; flex-shrink:0;
     }
     .back-btn:active { background: var(--surface2); }
-    .app-title { font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:3px; color:var(--accent); line-height:1; }
+    .app-title { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:3px; color:var(--accent); line-height:1; }
     .app-title.m30 { color: var(--purple); }
-    .app-sub   { font-size:8px; letter-spacing:2px; color:var(--text); text-transform:uppercase; margin-top:2px; }
-    .tabs { display:flex; gap:3px; background:var(--surface); border-radius:10px; padding:4px; border:1px solid var(--border); }
-    .tab  { background:none; border:none; color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:1px; padding:7px 12px; border-radius:7px; cursor:pointer; transition:all .15s; text-transform:uppercase; white-space:nowrap; }
-    .tab.on { background:var(--accent); color:#000; font-weight:700; }
-    .tab.on.m30 { background:var(--purple); }
+    .app-sub   { font-size:7px; letter-spacing:2px; color:var(--text); text-transform:uppercase; margin-top:2px; }
+    /* tabs sit on row 2, full-bleed */
+    .tabs { display:flex; gap:0; background:none; border:none; padding:0; border-top:1px solid var(--border); margin:0 -16px; }
+    .tab  {
+      flex:1; background:none; border:none; color:var(--text);
+      font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:1px;
+      padding:9px 4px; cursor:pointer; transition:all .15s; text-transform:uppercase;
+      border-bottom:3px solid transparent; text-align:center;
+    }
+    .tab.on { background:var(--accent); color:#000; font-weight:700; border-bottom-color:var(--accent); }
+    .tab.on.m30 { background:var(--purple); color:#fff; border-bottom-color:var(--purple); }
 
     /* ── SCREEN SYSTEM ── */
     .screen-wrap {
@@ -147,7 +157,7 @@
 
     .clock {
       font-family: 'Bebas Neue', sans-serif;
-      font-size: clamp(96px, 28vw, 130px);
+      font-size: clamp(80px, 22vw, 130px);
       letter-spacing: -2px; line-height: 1;
       color: var(--text); transition: color .15s;
     }
@@ -256,16 +266,16 @@
 
     /* Big numbers */
     .res-numbers {
-      display: flex; gap: 0; width: 100%; padding: 0 20px;
+      display: flex; gap: 0; width: 100%; padding: 0 12px;
       margin-top: 16px; flex-shrink: 0;
     }
     .res-chip {
       flex: 1; text-align: center;
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: 16px; padding: 18px 10px; margin: 0 5px;
+      border-radius: 16px; padding: 14px 6px; margin: 0 4px;
     }
     .res-chip-lbl { font-size: 9px; letter-spacing: 2px; color: var(--text); text-transform: uppercase; margin-bottom: 6px; }
-    .res-chip-val { font-family: 'Bebas Neue', sans-serif; font-size: 56px; letter-spacing: 1px; line-height: 1; }
+    .res-chip-val { font-family: 'Bebas Neue', sans-serif; font-size: clamp(36px, 12vw, 56px); letter-spacing: 1px; line-height: 1; }
     .res-chip-val.t  { color: var(--text); }
     .res-chip-val.ms { color: var(--purple); }
     .res-chip-val.m  { color: var(--accent); }
@@ -273,13 +283,13 @@
 
     /* 30m extra metrics */
     .res-extra {
-      display: flex; gap: 0; width: 100%; padding: 0 20px;
+      display: flex; gap: 0; width: 100%; padding: 0 12px;
       margin-top: 8px; flex-shrink: 0;
     }
     .res-extra-chip {
       flex: 1; text-align: center;
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; padding: 10px 8px; margin: 0 5px;
+      border-radius: 12px; padding: 8px 4px; margin: 0 4px;
     }
     .res-extra-lbl { font-size: 8px; letter-spacing: 1.5px; color: var(--text); text-transform: uppercase; margin-bottom: 4px; }
     .res-extra-val { font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: var(--text); letter-spacing: 1px; line-height: 1; }
@@ -405,15 +415,15 @@
     .drawer-overlay.on { opacity: 1; pointer-events: all; }
 
     .drawer {
-      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%) translateY(100%);
-      width: 100%; max-width: 480px;
+      position: fixed; bottom: 0; left: 0; right: 0;
+      transform: translateY(100%);
       background: var(--surface); border-radius: 20px 20px 0 0;
       border-top: 1px solid var(--border);
       z-index: 101; transition: transform .35s cubic-bezier(.4,0,.2,1);
       display: flex; flex-direction: column;
       max-height: 80dvh;
     }
-    .drawer.on { transform: translateX(-50%) translateY(0); }
+    .drawer.on { transform: translateY(0); }
 
     .drawer-handle {
       width: 40px; height: 4px; background: var(--border);
@@ -591,6 +601,40 @@
 
     @keyframes ci { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
     .r-card, .l-card { animation: ci .2s ease; }
+
+    /* ── GENDER TOGGLE ── */
+    .g-toggle {
+      display: inline-flex; gap: 3px; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 20px; padding: 3px; flex-shrink: 0;
+    }
+    .g-btn {
+      font-family: 'IBM Plex Mono', monospace; font-size: 9px; font-weight: 700;
+      letter-spacing: 1.5px; padding: 4px 10px; border-radius: 16px; border: none;
+      cursor: pointer; background: none; color: #555; text-transform: uppercase;
+      transition: all .15s;
+    }
+    .g-btn.b-on { background: var(--blue); color: #000; }
+    .g-btn.g-on { background: #ff69b4;     color: #000; }
+    .g-unset-badge {
+      display: inline-flex; align-items: center; gap: 4px; font-size: 9px;
+      letter-spacing: 1px; padding: 4px 9px; border-radius: 12px;
+      background: rgba(255,255,255,.05); color: #888;
+      border: 1px dashed #555; text-transform: uppercase; cursor: pointer;
+      flex-shrink: 0; transition: border-color .15s;
+    }
+    .add-row-g { display: flex; gap: 6px; margin-top: 8px; align-items: center; }
+    .g-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; display:inline-block; }
+    .dot-b { background: var(--blue); }
+    .dot-g { background: #ff69b4; }
+    .qchip-b { background: rgba(0,221,255,.1) !important; border-color: rgba(0,221,255,.25) !important; color: var(--blue) !important; }
+    .qchip-g { background: rgba(255,105,180,.1) !important; border-color: rgba(255,105,180,.25) !important; color: #ff69b4 !important; }
+    .tier-auto-badge {
+      display: inline-flex; align-items: center; gap: 5px; font-size: 9px;
+      letter-spacing: 1.5px; padding: 3px 9px; border-radius: 7px; text-transform: uppercase;
+    }
+    .tier-auto-badge.b { background: rgba(0,221,255,.1);   color: var(--blue); border: 1px solid rgba(0,221,255,.25); }
+    .tier-auto-badge.g { background: rgba(255,105,180,.1); color: #ff69b4;     border: 1px solid rgba(255,105,180,.3); }
+    .tier-auto-badge.u { background: rgba(255,255,255,.06); color: #888;       border: 1px solid #444; }
   </style>
 </head>
 <body>
@@ -627,11 +671,13 @@
 <div id="app">
 
   <header>
-    <div class="header-left">
-      <button class="back-btn" id="back-btn">← Home</button>
-      <div>
-        <div class="app-title" id="app-title">10m FLY</div>
-        <div class="app-sub" id="app-sub">Speed Timer</div>
+    <div class="header-row1">
+      <div class="header-left">
+        <button class="back-btn" id="back-btn">← Home</button>
+        <div>
+          <div class="app-title" id="app-title">10m FLY</div>
+          <div class="app-sub" id="app-sub">Speed Timer</div>
+        </div>
       </div>
     </div>
     <div class="tabs">
@@ -668,8 +714,12 @@
           <div class="q-wrap">
             <div class="q-lbl">Athlete — tap to select</div>
             <div class="q-strip" id="q-strip"></div>
-            <div class="add-row">
+            <div class="add-row-g">
               <input class="txt-in" id="q-input" type="text" placeholder="Add athlete name…" autocomplete="off" />
+              <div class="g-toggle" id="q-gender">
+                <button class="g-btn" data-g="B">B</button>
+                <button class="g-btn" data-g="G">G</button>
+              </div>
               <button class="plus-btn" id="q-plus">+</button>
             </div>
           </div>
@@ -715,8 +765,12 @@
         <div class="r-title" id="r-title-el" style="margin-bottom:0">Athlete Roster</div>
           <button class="export-btn" id="export-btn">⬇ EXPORT CSV</button>
         </div>
-        <div class="add-row">
+        <div class="add-row-g">
           <input class="txt-in" id="r-input" type="text" placeholder="Athlete name…" autocomplete="off" />
+          <div class="g-toggle" id="r-gender">
+            <button class="g-btn" data-g="B">B</button>
+            <button class="g-btn" data-g="G">G</button>
+          </div>
           <button class="plus-btn" id="r-plus">+</button>
         </div>
       </div>
@@ -760,7 +814,13 @@
   <div class="drawer-handle"></div>
   <div class="drawer-header">
     <div class="drawer-name" id="drawer-name">—</div>
-    <button class="drawer-close" id="drawer-close">✕</button>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="g-toggle" id="drawer-gender">
+        <button class="g-btn" data-g="B">B</button>
+        <button class="g-btn" data-g="G">G</button>
+      </div>
+      <button class="drawer-close" id="drawer-close">✕</button>
+    </div>
   </div>
   <div class="drawer-prs" id="drawer-prs"></div>
   <div class="drawer-tabs" id="drawer-tabs">
@@ -802,16 +862,29 @@ roster.forEach(a => {
     const runs = history.filter(e => e.athleteId === a.id && (!e.mode || e.mode === '10m'));
     if (runs.length) a.firstTime = runs[runs.length - 1].timeMs;
   }
-  // Ensure 30m PR fields exist
+  // Ensure all fields exist on existing athletes
   if (a.pr30Ms  === undefined) a.pr30Ms  = null;
   if (a.pr30Mph === undefined) a.pr30Mph = null;
   if (a.runs30  === undefined) a.runs30  = 0;
+  if (a.gender  === undefined) a.gender  = null;
   if (a.first30Time === undefined) {
     const runs30 = history.filter(e => e.athleteId === a.id && e.mode === '30m');
     a.first30Time = runs30.length ? runs30[runs30.length - 1].timeMs : null;
   }
 });
 persist();
+
+// ── Gender selection state for add inputs ──
+let qGender = null; // null | 'B' | 'G'
+let rGender = null;
+
+function setGender(toggleEl, val, stateRef) {
+  toggleEl.querySelectorAll('.g-btn').forEach(b => {
+    b.classList.remove('b-on', 'g-on');
+    if (b.dataset.g === val) b.classList.add(val === 'B' ? 'b-on' : 'g-on');
+  });
+  return val;
+}
 
 // ══════════════════════════════════════
 //  DRAWER STATE
@@ -876,10 +949,12 @@ function doStop() {
   $clock.textContent = fmt(ms);
 
   const athleteName = activeId ? nameOf(activeId) : null;
+  const activeAthlete = roster.find(r => r.id === activeId);
+  const genderColor = activeAthlete && activeAthlete.gender === 'G' ? '#ff69b4'
+                    : currentMode === '30m' ? 'var(--purple)' : 'var(--accent)';
   const resAthlete  = document.getElementById('res-athlete');
-  const spanCls = currentMode === '30m' ? 'm30' : '';
   resAthlete.innerHTML = athleteName
-    ? `Result for <span class="${spanCls}">${esc(athleteName)}</span>`
+    ? `Result for <span style="color:${genderColor}">${esc(athleteName)}</span>`
     : 'Result';
 
   renderResults(ms);
@@ -990,6 +1065,7 @@ function doSave() {
     const pr = checkPR10m(activeId, ms, speed);
     entry = {
       id: Date.now(), athleteId: activeId, name, mode: '10m',
+      gender: a ? (a.gender || null) : null,
       timeMs: ms, mph: speed.toFixed(2),
       isPrTime: pr.time, isPrMph: pr.mph,
       timestamp: new Date().toISOString()
@@ -1011,6 +1087,7 @@ function doSave() {
     const pr = checkPR30m(activeId, ms, msVal, mphVal);
     entry = {
       id: Date.now(), athleteId: activeId, name, mode: '30m',
+      gender: a ? (a.gender || null) : null,
       timeMs: ms,
       ms: msVal.toFixed(3), mph: mphVal.toFixed(2), kmh: kmhVal.toFixed(2),
       buildUp: currentBuildUp,
@@ -1108,14 +1185,17 @@ const TIERS_30M_GIRLS = [
   { name:'Developmental',       range:'< 6.8 m/s  ·  < 15.2 mph',        maxMs:6.8,  color:'#666666', bg:'rgba(100,100,100,0.06)', sparkle:false },
 ];
 
-let tierGender = 'boys'; // default; toggle on results panel
 
 function renderTiers30m(msVal) {
-  const el     = document.getElementById('res-tiers');
-  const tiers  = tierGender === 'boys' ? TIERS_30M_BOYS : TIERS_30M_GIRLS;
+  const el = document.getElementById('res-tiers');
+
+  // Determine gender from active athlete, fall back to 'B'
+  const activeAthlete = roster.find(r => r.id === activeId);
+  const gender = (activeAthlete && activeAthlete.gender) ? activeAthlete.gender : 'B';
+  const tiers  = gender === 'G' ? TIERS_30M_GIRLS : TIERS_30M_BOYS;
 
   // Find active tier
-  let activeTier = tiers[tiers.length - 1]; // default developmental
+  let activeTier = tiers[tiers.length - 1];
   for (const t of tiers) {
     if (t.minMs !== undefined && t.maxMs !== undefined) {
       if (msVal >= t.minMs && msVal < t.maxMs) { activeTier = t; break; }
@@ -1126,29 +1206,34 @@ function renderTiers30m(msVal) {
     }
   }
 
-  const genderToggle = `
-    <div style="display:flex;gap:6px;margin-bottom:10px;">
-      <button class="bu-chip${tierGender==='boys'?' on':''}" id="tg-boys" style="font-size:10px;padding:5px 12px">Boys</button>
-      <button class="bu-chip${tierGender==='girls'?' on':''}" id="tg-girls" style="font-size:10px;padding:5px 12px">Girls</button>
-    </div>`;
+  // Auto badge
+  const badgeCls  = gender === 'G' ? 'g' : 'b';
+  const badgeTxt  = gender === 'G' ? '● Girls — auto' : '● Boys — auto';
+  const unsetNote = (!activeAthlete || !activeAthlete.gender)
+    ? '<div style="font-size:9px;color:#888;letter-spacing:1px;margin-bottom:6px">No gender set — defaulting to Boys. Set in Roster.</div>'
+    : '';
 
-  el.innerHTML = '<div class="tier-lbl">Speed Tier</div>' + genderToggle +
-    tiers.map(t => buildTierRow(t, t === activeTier)).join('');
-
-  document.getElementById('tg-boys').addEventListener('click', () => { tierGender='boys'; renderTiers30m(msVal); });
-  document.getElementById('tg-girls').addEventListener('click', () => { tierGender='girls'; renderTiers30m(msVal); });
+  el.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div class="tier-lbl" style="margin-bottom:0">Speed Tier</div>
+      <span class="tier-auto-badge ${badgeCls}">${badgeTxt}</span>
+    </div>
+    ${unsetNote}` +
+    tiers.map(t => buildTierRow(t, t === activeTier, gender)).join('');
 }
 
-function buildTierRow(t, active) {
-  const isElite  = active && t.sparkle;
-  const rowCls   = 'tier-row' + (active ? (isElite ? ' active elite-active' : ' active') : '');
-  const rowStyle  = active && !isElite ? `border-color:${t.color}; background:${t.bg};` : '';
+function buildTierRow(t, active, gender) {
+  const isElite   = active && t.sparkle;
+  const girlActive = active && gender === 'G' && !isElite;
+  const activeColor = girlActive ? '#ff69b4' : t.color;
+  const activeBg    = girlActive ? 'rgba(255,105,180,0.08)' : t.bg;
+  const rowCls    = 'tier-row' + (active ? (isElite ? ' active elite-active' : ' active') : '');
+  const rowStyle  = active && !isElite ? `border-color:${activeColor}; background:${activeBg};` : '';
   const nameCls   = 'tier-name' + (isElite ? ' sparkle' : '');
-  const nameStyle = isElite ? '' : `color:${active ? t.color : 'var(--muted)'}`;
+  const nameStyle = isElite ? '' : `color:${active ? activeColor : 'var(--muted)'}`;
   const youCls    = 'tier-you' + (isElite ? ' sparkle' : '');
-  const youStyle  = isElite ? '' : `background:${t.color}; color:#000`;
+  const youStyle  = isElite ? '' : `background:${activeColor}; color:#000`;
   return `<div class="${rowCls}" style="${rowStyle}">
-    <div class="tier-dot" style="background:${t.color}"></div>
+    <div class="tier-dot" style="background:${active ? activeColor : t.color}"></div>
     <div class="tier-info">
       <div class="${nameCls}" style="${nameStyle}">${t.name}</div>
       <div class="tier-range">${t.range}</div>
@@ -1173,8 +1258,17 @@ function renderQueue() {
     return;
   }
   strip.innerHTML = roster.map(a => {
-    const cls = 'qchip' + (a.id === activeId ? (is30 ? ' on m30' : ' on') : '');
-    return `<div class="${cls}" data-id="${a.id}">${esc(a.name)}</div>`;
+    const isActive = a.id === activeId;
+    const gClass = a.gender === 'B' ? 'qchip-b' : a.gender === 'G' ? 'qchip-g' : '';
+    const dot = a.gender === 'B'
+      ? '<span class="g-dot dot-b"></span>'
+      : a.gender === 'G'
+      ? '<span class="g-dot dot-g"></span>'
+      : '';
+    let cls = 'qchip';
+    if (isActive) cls += is30 ? ' on m30' : ' on';
+    else if (gClass) cls += ' ' + gClass;
+    return `<div class="${cls}" data-id="${a.id}">${dot}${esc(a.name)}</div>`;
   }).join('');
   strip.querySelectorAll('.qchip').forEach(c => {
     c.addEventListener('click', () => selectAthlete(parseInt(c.dataset.id)));
@@ -1201,9 +1295,10 @@ function nextUnknownName() {
   return 'Unknown ' + n;
 }
 
-function createAthlete(name) {
+function createAthlete(name, gender) {
   const a = {
     id: Date.now(), name,
+    gender: gender || null,                                    // 'B' | 'G' | null
     prTime: null, prMph: null, firstTime: null, runs: 0,       // 10m
     pr30Ms: null, pr30Mph: null, first30Time: null, runs30: 0  // 30m
   };
@@ -1272,15 +1367,67 @@ document.getElementById('dup-overwrite').addEventListener('click', () => {
   toast('Overwritten ✓');
 });
 
-function addAthlete(name) {
+function addAthlete(name, gender) {
   name = name.trim();
   if (!name) return;
   const existing = roster.find(r => r.name.toLowerCase() === name.toLowerCase());
   if (existing) { showDupModal(name, existing.id); return; }
-  createAthlete(name);
+  createAthlete(name, gender);
 }
 
-// ── inline rename ──
+// ── gender toggle wiring ──
+document.getElementById('q-gender').querySelectorAll('.g-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const already = btn.classList.contains('b-on') || btn.classList.contains('g-on');
+    document.getElementById('q-gender').querySelectorAll('.g-btn').forEach(b => b.classList.remove('b-on','g-on'));
+    if (!already) {
+      btn.classList.add(btn.dataset.g === 'B' ? 'b-on' : 'g-on');
+      qGender = btn.dataset.g;
+    } else { qGender = null; }
+  });
+});
+document.getElementById('r-gender').querySelectorAll('.g-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const already = btn.classList.contains('b-on') || btn.classList.contains('g-on');
+    document.getElementById('r-gender').querySelectorAll('.g-btn').forEach(b => b.classList.remove('b-on','g-on'));
+    if (!already) {
+      btn.classList.add(btn.dataset.g === 'B' ? 'b-on' : 'g-on');
+      rGender = btn.dataset.g;
+    } else { rGender = null; }
+  });
+});
+
+document.getElementById('q-plus').addEventListener('click', () => {
+  const inp = document.getElementById('q-input');
+  addAthlete(inp.value, qGender);
+  inp.value = '';
+  // reset toggle
+  document.getElementById('q-gender').querySelectorAll('.g-btn').forEach(b => b.classList.remove('b-on','g-on'));
+  qGender = null;
+});
+document.getElementById('q-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    addAthlete(e.target.value, qGender);
+    e.target.value = '';
+    document.getElementById('q-gender').querySelectorAll('.g-btn').forEach(b => b.classList.remove('b-on','g-on'));
+    qGender = null;
+  }
+});
+document.getElementById('r-plus').addEventListener('click', () => {
+  const inp = document.getElementById('r-input');
+  addAthlete(inp.value, rGender);
+  inp.value = '';
+  document.getElementById('r-gender').querySelectorAll('.g-btn').forEach(b => b.classList.remove('b-on','g-on'));
+  rGender = null;
+});
+document.getElementById('r-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    addAthlete(e.target.value, rGender);
+    e.target.value = '';
+    document.getElementById('r-gender').querySelectorAll('.g-btn').forEach(b => b.classList.remove('b-on','g-on'));
+    rGender = null;
+  }
+});
 function startEdit(id) {
   const card = document.querySelector(`.r-card[data-id="${id}"]`);
   if (!card) return;
@@ -1366,20 +1513,6 @@ function commitEdit(id, rawName) {
   toast('Renamed ✓');
 }
 
-document.getElementById('q-plus').addEventListener('click', () => {
-  const inp = document.getElementById('q-input');
-  addAthlete(inp.value); inp.value = '';
-});
-document.getElementById('q-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') { addAthlete(e.target.value); e.target.value = ''; }
-});
-document.getElementById('r-plus').addEventListener('click', () => {
-  const inp = document.getElementById('r-input');
-  addAthlete(inp.value); inp.value = '';
-});
-document.getElementById('r-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') { addAthlete(e.target.value); e.target.value = ''; }
-});
 
 function removeAthlete(id) {
   const a = roster.find(r => r.id === id);
@@ -1388,6 +1521,17 @@ function removeAthlete(id) {
   roster = roster.filter(r => r.id !== id);
   if (activeId === id) activeId = null;
   persist(); renderQueue(); renderRoster();
+}
+
+// ── Gender toggle HTML helper ──
+function genderToggleHTML(a) {
+  if (a.gender === 'B') {
+    return `<div class="g-toggle" data-gid="${a.id}"><button class="g-btn b-on" data-g="B">B</button><button class="g-btn" data-g="G">G</button></div>`;
+  } else if (a.gender === 'G') {
+    return `<div class="g-toggle" data-gid="${a.id}"><button class="g-btn" data-g="B">B</button><button class="g-btn g-on" data-g="G">G</button></div>`;
+  } else {
+    return `<span class="g-unset-badge" data-gid="${a.id}">⚠ Set gender</span>`;
+  }
 }
 
 // ══════════════════════════════════════
@@ -1408,7 +1552,6 @@ function renderRoster() {
   if (!roster.length) { el.innerHTML = keyBox + '<div class="r-empty">No athletes yet — add above</div>'; return; }
 
   if (is30) {
-    // 30m module: show only 30m PRs, single row of pills, centered
     el.innerHTML = keyBox + roster.map(a => {
       const runs30 = a.runs30 || 0;
       const pills = [];
@@ -1417,11 +1560,16 @@ function renderRoster() {
       if (a.first30Time)  pills.push(`<span class="r-pill f">🚀 ${fmt(a.first30Time)}s 1st</span>`);
       if (!a.pr30Ms && !a.pr30Mph) pills.push('<span class="r-pill n">No 30m runs yet</span>');
       const runLabel = runs30 > 0 ? `${runs30} Run${runs30 !== 1 ? 's' : ''}` : '';
-      return `<div class="r-card" data-id="${a.id}" style="border-color:rgba(191,95,255,.2)">
+      const borderCol = a.gender === 'G' ? 'rgba(255,105,180,.25)' : 'rgba(191,95,255,.2)';
+      const gToggle = genderToggleHTML(a);
+      return `<div class="r-card" data-id="${a.id}" style="border-color:${borderCol}">
         <div style="flex:1;min-width:0">
-          <div class="r-name-wrap">
+          <div class="r-name-wrap" style="justify-content:space-between">
             <div class="r-name">${esc(a.name)}${runLabel ? `<span class="r-runcount"> — ${runLabel}</span>` : ''}</div>
-            <button class="r-edit-btn" data-id="${a.id}" title="Rename">✎</button>
+            <div style="display:flex;align-items:center;gap:6px">
+              ${gToggle}
+              <button class="r-edit-btn" data-id="${a.id}" title="Rename">✎</button>
+            </div>
           </div>
           <div class="r-prs">${pills.join('')}</div>
         </div>
@@ -1429,7 +1577,6 @@ function renderRoster() {
       </div>`;
     }).join('');
   } else {
-    // 10m module: show only 10m PRs, single row of pills, centered
     el.innerHTML = keyBox + roster.map(a => {
       const runs10 = a.runs || 0;
       const pills = [];
@@ -1438,11 +1585,16 @@ function renderRoster() {
       if (a.firstTime) pills.push(`<span class="r-pill f">🚀 ${fmt(a.firstTime)}s 1st</span>`);
       if (!a.prTime && !a.prMph) pills.push('<span class="r-pill n">No runs yet</span>');
       const runLabel = runs10 > 0 ? `${runs10} Run${runs10 !== 1 ? 's' : ''}` : '';
-      return `<div class="r-card" data-id="${a.id}" style="border-color:rgba(0,255,170,.2)">
+      const borderCol = a.gender === 'B' ? 'rgba(0,221,255,.2)' : a.gender === 'G' ? 'rgba(255,105,180,.2)' : 'rgba(0,255,170,.2)';
+      const gToggle = genderToggleHTML(a);
+      return `<div class="r-card" data-id="${a.id}" style="border-color:${borderCol}">
         <div style="flex:1;min-width:0">
-          <div class="r-name-wrap">
+          <div class="r-name-wrap" style="justify-content:space-between">
             <div class="r-name">${esc(a.name)}${runLabel ? `<span class="r-runcount"> — ${runLabel}</span>` : ''}</div>
-            <button class="r-edit-btn" data-id="${a.id}" title="Rename">✎</button>
+            <div style="display:flex;align-items:center;gap:6px">
+              ${gToggle}
+              <button class="r-edit-btn" data-id="${a.id}" title="Rename">✎</button>
+            </div>
           </div>
           <div class="r-prs">${pills.join('')}</div>
         </div>
@@ -1456,6 +1608,8 @@ function renderRoster() {
       if (e.target.closest('.r-del'))        return;
       if (e.target.closest('.r-edit-btn'))   return;
       if (e.target.closest('.r-name-input')) return;
+      if (e.target.closest('.g-toggle'))     return;
+      if (e.target.closest('.g-unset-badge'))return;
       openDrawer(parseInt(card.dataset.id));
     });
   });
@@ -1464,6 +1618,33 @@ function renderRoster() {
   });
   el.querySelectorAll('.r-del').forEach(b => {
     b.addEventListener('click', () => removeAthlete(parseInt(b.dataset.id)));
+  });
+  // Gender toggle in roster cards
+  el.querySelectorAll('.g-toggle[data-gid]').forEach(tog => {
+    tog.querySelectorAll('.g-btn').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const id = parseInt(tog.dataset.gid);
+        const a  = roster.find(r => r.id === id);
+        if (!a) return;
+        const already = btn.classList.contains('b-on') || btn.classList.contains('g-on');
+        a.gender = already ? null : btn.dataset.g;
+        persist(); renderQueue(); renderRoster();
+      });
+    });
+  });
+  // Unset badge click — show toggle inline (just re-render after setting B as default prompt)
+  el.querySelectorAll('.g-unset-badge[data-gid]').forEach(badge => {
+    badge.addEventListener('click', e => {
+      e.stopPropagation();
+      const id = parseInt(badge.dataset.gid);
+      const a  = roster.find(r => r.id === id);
+      if (!a) return;
+      // Replace badge with a mini modal-free toggle by briefly highlighting the card
+      // Just set to B by default and let them change — faster than another modal
+      a.gender = 'B';
+      persist(); renderQueue(); renderRoster();
+    });
   });
 }
 
@@ -1484,6 +1665,25 @@ function renderDrawer(id) {
   if (!a) return;
 
   document.getElementById('drawer-name').textContent = a.name;
+
+  // Gender toggle in drawer header
+  const drawerGenderEl = document.getElementById('drawer-gender');
+  if (drawerGenderEl) {
+    drawerGenderEl.querySelectorAll('.g-btn').forEach(btn => {
+      btn.classList.remove('b-on', 'g-on');
+      if (a.gender === btn.dataset.g) {
+        btn.classList.add(a.gender === 'B' ? 'b-on' : 'g-on');
+      }
+    });
+    drawerGenderEl.querySelectorAll('.g-btn').forEach(btn => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        const already = btn.classList.contains('b-on') || btn.classList.contains('g-on');
+        a.gender = already ? null : btn.dataset.g;
+        persist(); renderQueue(); renderRoster(); renderDrawer(id);
+      };
+    });
+  }
 
   // Two-column PR summary at top of drawer
   const prsEl = document.getElementById('drawer-prs');
